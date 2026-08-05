@@ -1,7 +1,9 @@
-package com.holybuckets.template.menu;
+package com.holybuckets.relicfuse.menu;
 
 import com.holybuckets.foundation.HBUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -12,6 +14,15 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 public class TemplateChestEntityMenu extends AbstractContainerMenu {
+
+    // data synced from server to client when the menu opens
+    public record Data(BlockPos pos) {}
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, Data> STREAM_CODEC =
+        StreamCodec.composite(
+            BlockPos.STREAM_CODEC.cast(),
+            Data::pos,
+            Data::new);
 
     private final Container container;
     public final int containerRows;
@@ -131,4 +142,3 @@ public class TemplateChestEntityMenu extends AbstractContainerMenu {
         }
     }
 }
-

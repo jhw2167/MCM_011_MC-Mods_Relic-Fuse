@@ -1,8 +1,8 @@
 
-package com.holybuckets.template.block.be;
+package com.holybuckets.relicfuse.block.be;
 
-import com.holybuckets.template.Constants;
-import com.holybuckets.template.block.ModBlocks;
+import com.holybuckets.relicfuse.Constants;
+import com.holybuckets.relicfuse.block.ModBlocks;
 import net.blay09.mods.balm.api.DeferredObject;
 import net.blay09.mods.balm.api.block.BalmBlockEntities;
 import net.minecraft.resources.ResourceLocation;
@@ -22,6 +22,6 @@ public class ModBlockEntities {
     }
 
     private static ResourceLocation id(String name) {
-        return new ResourceLocation(Constants.MOD_ID, name);
+        return ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, name);
     }
 }

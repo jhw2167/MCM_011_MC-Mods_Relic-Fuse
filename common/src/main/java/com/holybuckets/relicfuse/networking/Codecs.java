@@ -1,4 +1,4 @@
-package com.holybuckets.template.networking;
+package com.holybuckets.relicfuse.networking;
 
 import com.holybuckets.foundation.HBUtil;
 import net.minecraft.core.BlockPos;

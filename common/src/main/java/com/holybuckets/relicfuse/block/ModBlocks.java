@@ -1,6 +1,6 @@
-package com.holybuckets.template.block;
+package com.holybuckets.relicfuse.block;
 
-import com.holybuckets.template.Constants;
+import com.holybuckets.relicfuse.Constants;
 import net.blay09.mods.balm.api.Balm;
 import net.blay09.mods.balm.api.block.BalmBlocks;
 import net.minecraft.resources.ResourceLocation;
@@ -31,7 +31,7 @@ public class ModBlocks {
     }
 
     private static ResourceLocation id(String name) {
-        return new ResourceLocation(Constants.MOD_ID, name);
+        return ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, name);
     }
 
     private static BlockBehaviour.Properties defaultProperties() {

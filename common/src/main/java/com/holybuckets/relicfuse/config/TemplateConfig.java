@@ -1,6 +1,6 @@
-package com.holybuckets.template.config;
+package com.holybuckets.relicfuse.config;
 
-import com.holybuckets.template.Constants;
+import com.holybuckets.relicfuse.Constants;
 import net.blay09.mods.balm.api.config.reflection.Comment;
 import net.blay09.mods.balm.api.config.reflection.Config;
 

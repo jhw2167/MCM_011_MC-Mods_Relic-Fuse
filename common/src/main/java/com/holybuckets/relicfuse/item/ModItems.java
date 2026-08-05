@@ -1,8 +1,8 @@
-package com.holybuckets.template.item;
+package com.holybuckets.relicfuse.item;
 
 
-import com.holybuckets.template.Constants;
-import com.holybuckets.template.block.ModBlocks;
+import com.holybuckets.relicfuse.Constants;
+import com.holybuckets.relicfuse.block.ModBlocks;
 import net.blay09.mods.balm.api.DeferredObject;
 import net.blay09.mods.balm.api.item.BalmItems;
 import net.minecraft.resources.ResourceLocation;
@@ -20,7 +20,7 @@ public class ModItems {
     }
 
     private static ResourceLocation id(String name) {
-        return new ResourceLocation(Constants.MOD_ID, name);
+        return ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, name);
     }
 
 }

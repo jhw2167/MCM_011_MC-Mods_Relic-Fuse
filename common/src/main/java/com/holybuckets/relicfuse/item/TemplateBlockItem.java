@@ -1,6 +1,6 @@
-package com.holybuckets.template.item;
+package com.holybuckets.relicfuse.item;
 
-import com.holybuckets.template.block.ModBlocks;
+import com.holybuckets.relicfuse.block.ModBlocks;
 import net.minecraft.world.item.BlockItem;
 
 public class TemplateBlockItem extends BlockItem {

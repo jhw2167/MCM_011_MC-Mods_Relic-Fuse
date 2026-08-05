@@ -1,4 +1,4 @@
-package com.holybuckets.template.client.render;
+package com.holybuckets.relicfuse.client.render;
 
 import com.holybuckets.foundation.block.entity.SimpleBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
