@@ -1,13 +1,13 @@
 package com.holybuckets.relicfuse.client;
 
+import com.holybuckets.relicfuse.client.particle.ModParticleProviders;
 import net.blay09.mods.balm.client.BalmClientRegistrars;
 
 
 public class CommonClassClient {
 
     public static void initClient(BalmClientRegistrars registrars) {
-        // Stripped skeleton: no block-entity renderers or screens registered yet.
-        // Register them via registrars.blockEntityRenderers(...) / registrars.screens(...) when content is added.
+        registrars.particleProviders(ModParticleProviders::initialize);
     }
 
     public static void sample()

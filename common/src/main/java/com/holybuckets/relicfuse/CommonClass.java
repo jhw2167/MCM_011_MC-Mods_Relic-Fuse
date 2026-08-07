@@ -1,7 +1,10 @@
 package com.holybuckets.relicfuse;
 
 import com.holybuckets.relicfuse.block.ModBlocks;
+import com.holybuckets.relicfuse.effect.ModEffects;
+import com.holybuckets.relicfuse.effect.ModPotions;
 import com.holybuckets.relicfuse.item.ModItems;
+import com.holybuckets.relicfuse.particle.ModParticles;
 import com.holybuckets.relicfuse.platform.Services;
 import net.blay09.mods.balm.core.BalmRegistrars;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -37,6 +40,9 @@ public class CommonClass {
         registrars.blocks(ModBlocks::initialize);
         registrars.items(ModItems::initialize);
         registrars.creativeModeTabs(ModItems::creativeTab);
+        registrars.particleTypes(ModParticles::initialize);
+        ModEffects.register(registrars.registrar());
+        ModPotions.register(registrars.registrar());
     }
 
     public static void sample()

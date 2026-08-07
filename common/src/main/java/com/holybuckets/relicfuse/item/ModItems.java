@@ -19,6 +19,7 @@ import net.blay09.mods.balm.world.item.DeferredItem;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ToolMaterial;
 
 import java.util.ArrayList;
@@ -174,6 +175,7 @@ public class ModItems {
     }*/
 
     public static void creativeTab(BalmCreativeModeTabRegistrar tabRegistrar) {
+        ITEMS.addFirst(new DefferredObject<Item>(Items.BRUSH));
         CreativeTabRegistry.registerTab(tabRegistrar, Constants.MOD_ID, ModItems.ironBrushItem, ITEMS);
     }
 
