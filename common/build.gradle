@@ -19,14 +19,19 @@ neoForge {
 }
 
 dependencies {
-    compileOnly group: 'org.spongepowered', name: 'mixin', version: '0.8.5'
+    compileOnly group: 'org.spongepowered', name: 'mixin', version: '0.8.7'
     implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.1'
 
     implementation("net.blay09.mods:balm-common:${balm_version}") {
         changing = true
     }
 
-    implementation("com.holybuckets.foundation:hbs_foundation-common-${minecraft_version}:${foundation_version}") {
+    // compileOnly (not implementation): hbs_foundation publishes a shared capability
+    // 'com.holybuckets.foundation:hbs_foundation' on every variant, so letting foundation-common
+    // leak onto the loader classpaths (which already carry foundation-fabric/-neoforge) triggers a
+    // capability conflict. The loader jars merge the common classes in via commonJava, so the loaders
+    // get foundation's common classes from foundation-<loader>; :common only needs it at compile time.
+    compileOnly("com.holybuckets.foundation:hbs_foundation-common-${minecraft_version}:${foundation_version}") {
         changing = true
     }
 }

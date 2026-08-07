@@ -1,0 +1,115 @@
+Hi!
+
+in this text file I will explain Everything included In The Image Concepts In More detail
+
+1. - Structures And Basics
+    
+ive had 3 main ideas for structures that we can include in the early contest version, Those being
+
+
+
+A. The Ancient catacombs -
+The ancient catacombs are Highly Based Of the ancient city, They Are abandoned Ancient Research Centers Which Were used By The 
+Ancient builders to research Complex fighting styles, But also research the properties On Ancient "Power Crystals" Will go in depth Into what power crystals are in another entry.
+
+The Suspicious Block Of The ancient Catacombs Can Be A Suspicious Soul Soil Block
+
+
+B. The Ruined Ship
+The ruined ship, As the name suggests is based Of the vanilla shipwreck, It is a ruin Of a ship That was ment to Transport The Ancient Builders Into Very Far Lands, Its said that the Ruined Ship Carried Lots Valuable Materials And Riches But Also Lots of powerful Gear Even more powerful then NETHERITE
+
+The suspicious Block Of The Ruined Ship Can Be a suspicious clay Block
+
+C. The Prehistoric Oasis
+Its Said That Millions Of years Ago This Structure was a Very Important Point Of Interest To ancient Being Creatures Due To It Being The perfect Place To Live in! Sadly those ages Are long gone, Now scattered Around the oasis You Can Find The Remains of these creatures, Some still holding lots of power,
+
+The suspicious Block Of The Prehistoric Oasis Can Be A Suspiciouis mud block!
+
+
+2. - Loot and Rarities
+
+A. Rarities And Item Categories
+
+This mod Might Contain Alot Of Different Item Types And Categories!
+
+Which Include
+
+- Structure Specific Relics,
+- Tools
+- Ancient Artifacts - Imo We should do it after the contest Because of the use of custom models for most of these, ill still go in depth with them
+
+
+B. Structure Specifc Relics,
+
+- The Ancient catacombs,
+The main relics To The ancient catacombs Are "POWER CRYSTALS"
+They are one of the main ingredients used For brushes, But also Give you boosts If Used In a Curious Slot (?)
+
+theres 3 Different Power crystals
+
+Uncommon - Earth Crystal - 1 / 20 chance to get from an suspicious Soul soil in the ancient catacombs structure,
+Rare - Blessed Crystal - 1 / 50 Chance To get From an Suspicious soul soil in the ancient catacombs structure,
+Very Rare - Demonic Crystal - 1 / 100 Chance To get from an Suspicious Soul Soil In The ancient catacombs structure,
+
+Each Of these crystals Is used to craft a higher tier of brushes, BUT You can also equip Them In a curious Slot (?)
+to get a specific ability! Those being
+
+Earth crystal - Lowers your speed By 20% But Gives you 10% more damage, And 10% More resistance to damage
+Blessed Crystal - Can Boost Your Damage By 75% At the cost of 2 hearts
+Demonic crystal - Will Boost Your Damage by 300% At The cost Of -100% armor, Meaning armor Doesnt Give you any sort of protection
+
+- The Prehistoric Oasis
+The main Relics of the ancient catacombs Are " Ancient (Fossils or Bones) "
+They Are one of the main ingredients used to craft brushes, I have Another idea on what they can do but i think we should add that in an update Post Contest
+
+Theres 3 different Types Of Bones
+
+Uncommon - Encased Bone - 1 / 20 chance to get from An suspicious Mud Block In the prehistoric oasis
+Rare - Spirited Bone - 1 / 50 chance to get from An suspicious Mud Block In the prehistoric oasis
+Very Rare - overgrown Bone - 1 / 100 chance to get from An suspicious Mud Block In the prehistoric oasis
+
+C. Tools
+
+As you might of noticed In The Higher segment that there is no mention of relics in the ruined ship, Thats Because Even though theres 1 tool in every single current structure there 3 in the pirate structure!
+
+The Ancient catacombs - Have The Ancient shovel
+The Prehistoric Oasis - Has An Ancient Hoe
+And The Ruined Ship - Has The Ancient sword, pickaxe and Axe!
+
+Beware, The Current Texture Of the Hoe And Shovel Are place holders, Because id like them to be different from the ones found in the ruined ship!
+
+D. Ancient Artifacts
+
+The Ancient Artifacts Are The things i think we should Add In A future update thats on 1.20.1 or 1.21.1 due To It being crazy annoying to Backport Models
+
+- Theres 3 artifacts i currently had ideas for, you can see the models for them in the tools textures folder i think
+
+- The Thunder Hammer - A Hammer With Lightning Hammers - It should propably Be found In The oasis Because the 2 other items fit the catacombs and ship more imo
+- The Rapid Strike Glove - Glove Wielding The Powers Of Fast Martial Arts Attacks Allowing To quickly hit weak points of the enemy with alot of continues Attacks
+- The single strike glove - Glove wielding the powers of A Single, Slow But Very effective Martial arts attack allowing to damage your enemy With a single strike instead of a bunch of continus ones
+
+- The Thunder Hammer - Very Rare Rarity - 1 / 150 Chance To Be found in an Sus Mud Block In The prehistoric Oasis
+- The Rapid Strike glove - Very Rare Rarity - 1 / 150 chance to be found in an sus clay block in the ruined ship
+- The Single Strike Glove - Very Rare Rarity - 1 / 150 chance to be found in an sus clay block in the Ancient Catacombs
+
+3. Brush Progression
+
+The Brush Progression Is a Core Part Of The Mod, 
+Theres different Tiers Of Brushes
+
+- The Average Vanilla brush - Cant Find Custom Items from the mod
+- The Blaze Forged Brush - A Brush Forged with the use of netherite and blaze powder, IT can Only find Uncommon Items from the mod 
+- The Earth Harvester - A Brush Forged With an Encased Bone Handle And An earth Crystal, Allows For finding Uncommon And Rare Items from the mod! Also increases your Archeology luck by 10%
+- The spirited Brush - A brush Forged With The use of a spirited Bone And A Blessed Crystal, Allows for finding Uncommon, Rare And VERY rare items from the mod! Increases Your Base luck by      20%
+- The Ultimate Brush (Name is a work in progress) - A brush Forged WIth A Overgrown Bone And A demonic crystal, Allows for finding all the modded items, Also increases You Luck By 100%
+
+4. theres also the modifier system but we know how that works and i cant be bothered to write any more T-T
+
+
+
+PS. Sorry For not including concept images Like i did for the 2 i added, It took too long trying to make them look normal, So yeah, Thanks for reading all this, All Questions you have you can just ask me, Ill anwser as soon as im online, All Textures and models i made by now Are included in the folder, Reminder, THe hoe and shovel are getting changed 100% to match the other structures better, thank you for reading allat Cheers!
+
+
+
+
+

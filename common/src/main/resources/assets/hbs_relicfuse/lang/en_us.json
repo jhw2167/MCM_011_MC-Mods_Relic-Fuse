@@ -1,0 +1,33 @@
+{
+  "itemGroup.hbs_relicfuse.hbs_relicfuse": "HBs Relic Fuse",
+
+  "item.hbs_relicfuse.iron_brush": "Iron Brush",
+  "item.hbs_relicfuse.diamond_brush": "Diamond Brush",
+  "item.hbs_relicfuse.netherite_brush": "Netherite Brush",
+  "item.hbs_relicfuse.blaze_forged_brush": "Blaze Forged Brush",
+  "item.hbs_relicfuse.earth_harvester_brush": "Earth Harvester Brush",
+  "item.hbs_relicfuse.spirited_brush": "Spirited Brush",
+  "item.hbs_relicfuse.ultimate_brush": "Ultimate Brush",
+
+  "item.hbs_relicfuse.blessed_crystal": "Blessed Crystal",
+  "item.hbs_relicfuse.demonic_crystal": "Demonic Crystal",
+  "item.hbs_relicfuse.earth_crystal": "Earth Crystal",
+  "item.hbs_relicfuse.electric_crystal": "Electric Crystal",
+  "item.hbs_relicfuse.toxic_crystal": "Toxic Crystal",
+
+  "item.hbs_relicfuse.encased_bone": "Encased Bone",
+  "item.hbs_relicfuse.overgrown_bone": "Overgrown Bone",
+  "item.hbs_relicfuse.spirited_bone": "Spirited Bone",
+  "item.hbs_relicfuse.toxic_bone": "Toxic Bone",
+  "item.hbs_relicfuse.ender_bone": "Ender Bone",
+
+  "item.hbs_relicfuse.archeology_axe": "Archeology Axe",
+  "item.hbs_relicfuse.archeology_hoe": "Archeology Hoe",
+  "item.hbs_relicfuse.archeology_pickaxe": "Archeology Pickaxe",
+  "item.hbs_relicfuse.archeology_shovel": "Archeology Shovel",
+  "item.hbs_relicfuse.archeology_sword": "Archeology Sword",
+
+  "item.hbs_relicfuse.rapid_strike_glove": "Rapid Strike Glove",
+  "item.hbs_relicfuse.single_strike_glove": "Single Strike Glove",
+  "item.hbs_relicfuse.thunder_hammer": "Thunder Hammer"
+}

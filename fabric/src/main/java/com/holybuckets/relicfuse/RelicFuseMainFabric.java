@@ -1,7 +1,7 @@
 package com.holybuckets.relicfuse;
 
-import net.blay09.mods.balm.api.Balm;
-import net.blay09.mods.balm.api.EmptyLoadContext;
+import net.blay09.mods.balm.Balm;
+import net.blay09.mods.balm.fabric.platform.runtime.FabricLoadContext;
 import net.fabricmc.api.ModInitializer;
 
 //YOU NEED TO UPDATE NAME OF MAIN CLASS IN fabric.mod.json
@@ -10,12 +10,6 @@ public class RelicFuseMainFabric implements ModInitializer {
 
     @Override
     public void onInitialize() {
-
-        // This method is invoked by the Fabric mod loader when it is ready
-        // to load your mod. You can access Fabric and Common code in this
-        // project.
-
-        // Use Fabric to bootstrap the Common mod.
-        Balm.initialize(Constants.MOD_ID, EmptyLoadContext.INSTANCE, CommonClass::init);
+        Balm.initializeMod(Constants.MOD_ID, FabricLoadContext.INSTANCE, CommonClass::init);
     }
 }

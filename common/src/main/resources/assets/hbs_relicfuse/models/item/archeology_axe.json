@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "hbs_relicfuse:item/archeology_axe"
+  }
+}

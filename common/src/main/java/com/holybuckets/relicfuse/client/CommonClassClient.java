@@ -1,25 +1,15 @@
 package com.holybuckets.relicfuse.client;
 
-import com.holybuckets.relicfuse.client.screen.ModScreens;
-import com.holybuckets.relicfuse.item.ModItems;
-import com.holybuckets.foundation.client.ClientBalmEventRegister;
-import com.holybuckets.foundation.client.ClientEventRegistrar;
-import net.blay09.mods.balm.api.client.BalmClient;
+import net.blay09.mods.balm.client.BalmClientRegistrars;
 
 
 public class CommonClassClient {
 
-    public static void initClient() {
-        ClientEventRegistrar registrar = ClientEventRegistrar.getInstance();
-        ClientBalmEventRegister.registerEvents();
-        ModRenderers.clientInitialize(BalmClient.getRenderers());
-        ModScreens.clientInitialize(BalmClient.getScreens());
-        //ModItems.clientInitialize();
+    public static void initClient(BalmClientRegistrars registrars) {
+        // Stripped skeleton: no block-entity renderers or screens registered yet.
+        // Register them via registrars.blockEntityRenderers(...) / registrars.screens(...) when content is added.
     }
 
-    /**
-     * Description: Run sample tests methods
-     */
     public static void sample()
     {
 
