@@ -3,10 +3,14 @@ package com.holybuckets.relicfuse.core;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.holybuckets.foundation.GeneralConfig;
+import com.holybuckets.foundation.console.IMessager;
 import com.holybuckets.foundation.event.EventRegistrar;
 import com.holybuckets.foundation.event.custom.PlayerInteractEvent;
 import com.holybuckets.foundation.event.custom.SimpleMessageEvent;
 import com.holybuckets.foundation.networking.SimpleStringMessage;
+import com.holybuckets.relicfuse.CommonClass;
+import com.holybuckets.relicfuse.Constants;
+import com.holybuckets.relicfuse.RelicFuseMain;
 import com.holybuckets.relicfuse.component.FusionComponent;
 import com.holybuckets.relicfuse.effect.ModEffects;
 import com.holybuckets.relicfuse.item.IFusableItem;
@@ -21,6 +25,8 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.phys.Vec3;
 
@@ -44,9 +50,12 @@ public class FusionManager {
 
     private static final Map<ServerPlayer, Pair<ItemStack, ItemStack>> activeFusions = new HashMap<>();
 
+    private static IMessager MESSAGER;
+
     public static void init(EventRegistrar reg) {
         reg.registerOnPlayerInteract(PlayerInteractEvent.RightClickInteraction.class, FusionManager::playerUseItem);
         reg.registerOnSimpleMessage(FUSE_COMPLETE, FusionManager::onFuseComplete);
+        MESSAGER = CommonClass.MESSAGER;
     }
 
     private static void playerUseItem(PlayerInteractEvent.RightClickInteraction event) {
@@ -59,7 +68,7 @@ public class FusionManager {
 
         ItemStack tool = player.getMainHandItem();
         ItemStack fusable = player.getOffhandItem();
-        if (!isFusableTool(tool) || !isFusableItem(fusable)) return;
+        if (!isFusableTool(player, tool) || !isFusableItem(player, fusable)) return;
 
         String payload = buildPayload(tool, fusable);
         activeFusions.put((ServerPlayer) player, Pair.of(tool.copy(), fusable.copy()));
@@ -89,14 +98,51 @@ public class FusionManager {
     }
 
 
-    public static boolean isFusableTool(ItemStack stack) {
-        if (stack.isEmpty()) return false;
-        return stack.getItem() instanceof IFusedTool || stack.has(DataComponents.TOOL);
+    public static boolean isFusableTool(Player p, ItemStack tool) {
+        if (tool.isEmpty()) {
+            MESSAGER.sendBottomActionHint(p, readItemError("no_tool"));
+            return false;
+        } else if(tool.has(FusionComponent.TYPE) ) {
+            MESSAGER.sendBottomActionHint(p, readItemError("fused_tool"));
+            return false;
+        } else if(!(tool.has(DataComponents.TOOL) || tool.getItem().equals(Items.BRUSH) )) {
+            MESSAGER.sendBottomActionHint(p, readItemError("no_tool"));
+            return false;
+        }
+
+        return true;
     }
 
-    public static boolean isFusableItem(ItemStack stack) {
-        return !stack.isEmpty() && stack.getItem() instanceof IFusableItem;
+    public static boolean isFusableItem(Player p, ItemStack modifier) {
+        if (modifier.isEmpty()) {
+            MESSAGER.sendBottomActionHint(p, readItemError("no_fusable"));
+            return false;
+        } else if(!(modifier.getItem() instanceof IFusableItem)) {
+            MESSAGER.sendBottomActionHint(p, readItemError("unfusable_item"));
+            return false;
+        }
+
+        return true;
     }
+
+    /** Silent variants for validation away from a player interaction. */
+    public static boolean isFusableTool(ItemStack tool) {
+        return !tool.isEmpty() && !tool.has(FusionComponent.TYPE) && tool.has(DataComponents.TOOL);
+    }
+
+    public static boolean isFusableItem(ItemStack modifier) {
+        return !modifier.isEmpty() && modifier.getItem() instanceof IFusableItem;
+    }
+
+
+    private static String readItemError(String enUsField) {
+        return READ("item", Constants.MOD_ID, "fusion.error." + enUsField);
+    }
+
+    public static String READ(String group, String modId, String enUsField) {
+        return Component.translatable(group + "." + modId + "." + enUsField).getString();
+    }
+
 
     /**
      * Result is hardcoded to the iron brush until fusion recipes exist.
@@ -129,8 +175,18 @@ public class FusionManager {
         fused.set(DataComponents.ITEM_NAME, FusionNaming.buildName(modifier, tool));
         Component loreList = FusionNaming.buildLore(modifier, tool);
         fused.set(DataComponents.LORE, new ItemLore(List.of(loreList)));
+        fused.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(
+            List.of(),
+            List.of(),
+            List.of("relic_fused"),
+            tintsFor(modifier.getItem())));
 
         return fused;
+    }
+
+    private static List<Integer> tintsFor(Item modifier) {
+        // one 5-colour ramp per modifier; gold placeholder until the table exists
+        return List.of(7677954, 6835742, 11691025, 14456339, 16643423);
     }
 
 }

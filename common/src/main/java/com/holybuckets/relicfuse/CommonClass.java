@@ -1,5 +1,6 @@
 package com.holybuckets.relicfuse;
 
+import com.holybuckets.foundation.console.IMessager;
 import com.holybuckets.foundation.event.BalmEventRegister;
 import com.holybuckets.foundation.event.EventRegistrar;
 import com.holybuckets.relicfuse.block.ModBlocks;
@@ -17,6 +18,7 @@ import net.minecraft.world.item.Items;
 public class CommonClass {
 
     public static boolean isInitialized = false;
+    public static IMessager MESSAGER;
 
     public static void init(BalmRegistrars registrars)
     {
@@ -24,6 +26,7 @@ public class CommonClass {
             return;
 
         com.holybuckets.foundation.FoundationInitializers.commonInitialize();
+        MESSAGER = IMessager.getInstance();
         if (Services.PLATFORM.isModLoaded(Constants.MOD_ID)) {
             Constants.LOG.info("Hello to " + Constants.MOD_NAME + "!");
         }

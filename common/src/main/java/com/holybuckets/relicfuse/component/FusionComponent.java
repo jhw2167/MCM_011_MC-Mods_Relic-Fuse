@@ -9,8 +9,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Records which modifier item was fused into a tool. The id is resolved back to the modifier
- * Item at behavior time rather than storing a direct reference.
+ * Component dataType used to set Fused data on the weapon or item
  */
 public class FusionComponent {
 

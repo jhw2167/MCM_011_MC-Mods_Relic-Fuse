@@ -73,3 +73,20 @@ tool fusions:
 	- Player right/left click events
 	- Use large map to map to different behaviors by tool type -> fuse - or maybe large static classes that handle different behavioral use cases
 
+
+
+HBS Foundation Backport:
+
+- 26.2 waypoint does not delete when on entity
+
+- 1.21 and below - add static READ method for translating components
+
+- 1.21.1 and below SimpleStringMessage:
+
+  if (GeneralConfig.getInstance().isIntegrated()) {
+            EventRegistrar.getInstance().onSimpleMessage(p, message, message.messageId);
+            ClientEventRegistrar.getInstance().onSimpleMessage(p, message, message.messageId);
+            return message;
+        }
+
+needs to pass serverPlayer if integrated server

@@ -1,6 +1,7 @@
 package com.holybuckets.relicfuse;
 
 
+import com.holybuckets.foundation.console.Messager;
 import com.holybuckets.foundation.event.EventRegistrar;
 import com.holybuckets.foundation.event.balm.server.ServerStartingEvent;
 import com.holybuckets.relicfuse.config.TemplateConfig;
@@ -14,6 +15,7 @@ public class RelicFuseMain {
     private static boolean DEV_MODE = false;
     private static TemplateConfig CONFIG;
     public static RelicFuseMain INSTANCE;
+
 
     public RelicFuseMain()
     {

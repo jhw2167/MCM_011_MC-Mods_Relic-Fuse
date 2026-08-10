@@ -30,6 +30,10 @@
   "item.hbs_relicfuse.rapid_strike_glove": "Rapid Strike Glove",
   "item.hbs_relicfuse.single_strike_glove": "Single Strike Glove",
   "item.hbs_relicfuse.thunder_hammer": "Thunder Hammer",
+  "item.hbs_relicfuse.fusion.error.no_tool": "Requires a tool or weapon to fuse",
+  "item.hbs_relicfuse.fusion.error.fused_tool": "Tool has already been fused",
+  "item.hbs_relicfuse.fusion.error.no_fusable": "Place fusable item in your offhand to fuse",
+  "item.hbs_relicfuse.fusion.error.unfusable_item": "Item cannot be fused",
   "item.hbs_relicfuse.fusion.<modifier_item_id>.<tool_type>": "Crystal effect on this tool",
   "item.hbs_relicfuse.tier.wooden": "Wooden",
   "item.hbs_relicfuse.tier.stone": "Stone",
@@ -43,7 +47,6 @@
   "item.hbs_relicfuse.tool.pick": "Pick",
   "item.hbs_relicfuse.tool.hoe": "Hoe",
   "item.hbs_relicfuse.tool.shovel": "Shovel",
-
   "item.hbs_relicfuse.fusion.blessed_crystal.sword": "TODO: describe the fused effect",
   "item.hbs_relicfuse.fusion.blessed_crystal.axe": "TODO: describe the fused effect",
   "item.hbs_relicfuse.fusion.blessed_crystal.pick": "TODO: describe the fused effect",
