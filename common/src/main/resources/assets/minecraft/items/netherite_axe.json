@@ -1,0 +1,84 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "minecraft:custom_model_data",
+    "index": 0,
+    "cases": [
+      {
+        "when": "relic_fused",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/netherite_axe"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/axe_gild_struct"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/axe_gild_0",
+              "tints": [
+                {
+                  "type": "minecraft:custom_model_data",
+                  "index": 0,
+                  "default": 7677954
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/axe_gild_1",
+              "tints": [
+                {
+                  "type": "minecraft:custom_model_data",
+                  "index": 1,
+                  "default": 6835742
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/axe_gild_2",
+              "tints": [
+                {
+                  "type": "minecraft:custom_model_data",
+                  "index": 2,
+                  "default": 11691025
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/axe_gild_3",
+              "tints": [
+                {
+                  "type": "minecraft:custom_model_data",
+                  "index": 3,
+                  "default": 14456339
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/axe_gild_4",
+              "tints": [
+                {
+                  "type": "minecraft:custom_model_data",
+                  "index": 4,
+                  "default": 16643423
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "minecraft:item/netherite_axe"
+    }
+  }
+}

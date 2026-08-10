@@ -175,7 +175,7 @@ public class ModItems {
     }*/
 
     public static void creativeTab(BalmCreativeModeTabRegistrar tabRegistrar) {
-        ITEMS.addFirst(new DefferredObject<Item>(Items.BRUSH));
+        ITEMS.addFirst(new DeferredObject<Item>(() -> Items.BRUSH));
         CreativeTabRegistry.registerTab(tabRegistrar, Constants.MOD_ID, ModItems.ironBrushItem, ITEMS);
     }
 

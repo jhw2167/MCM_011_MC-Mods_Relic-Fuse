@@ -2,3 +2,55 @@ Requirements
 ---
 
 
+1. Get Items and Tools in the game		X
+
+brushes:
+./archeologyproject/brushtextures/blazeforgedbrush.png
+./archeologyproject/brushtextures/earthharvester.png
+./archeologyproject/brushtextures/spiritedbrush.png
+./archeologyproject/brushtextures/ultimatebrush.png
+./brushtextures/DiamondBrush.png
+./brushtextures/ironbrush.png
+./brushtextures/netheritebrush.png
+
+
+crystals:
+./archeologyproject/itemtextures/BlessedCrystal.png
+./archeologyproject/itemtextures/Demoniccrystal..png
+./archeologyproject/itemtextures/EarthCrystal.png
+./archeologyproject/itemtextures/encasedbone.png
+./archeologyproject/itemtextures/electriccrystal.png
+./archeologyproject/itemtextures/overgrownbone.png
+./archeologyproject/itemtextures/SpiritedBone.png
+./archeologyproject/itemtextures/toxicbone.png
+./archeologyproject/itemtextures/toxicCrystal.png
+./archeologyproject/itemtextures/enderbone.png
+
+tool fusions:
+./archeologyproject/tooltextures/archeologyaxfe.png
+./archeologyproject/tooltextures/archeologyhofe.png
+./archeologyproject/tooltextures/archeologypickaxfe.png
+./archeologyproject/tooltextures/archeologyshovfel.png
+./archeologyproject/tooltextures/archeologysworfd.png
+
+//other
+./archeologyproject/itemtextures/baseglovemodel.json
+./archeologyproject/tooltextures/baseglovemodel.json
+./archeologyproject/tooltextures/rapidstrikeglovetexture.png
+./archeologyproject/tooltextures/singlestrikeglovetexture.png
+./archeologyproject/tooltextures/thunderhammer.json
+./archeologyproject/tooltextures/thunderhammertexture.png
+
+
+2. Get a Fuse process going
+
+	- lets try and fuse a material with a brush into the next tier
+	- Register all possible fuses
+
+3. Process fuse animation
+	- Client side custom entity moving animation
+
+
+4. Lets demonstrate this process on a netherite axe
+
+	- 

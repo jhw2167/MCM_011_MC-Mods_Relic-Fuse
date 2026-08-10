@@ -1,5 +1,7 @@
 package com.holybuckets.relicfuse;
 
+import com.holybuckets.foundation.event.BalmEventRegister;
+import com.holybuckets.foundation.event.EventRegistrar;
 import com.holybuckets.relicfuse.block.ModBlocks;
 import com.holybuckets.relicfuse.effect.ModEffects;
 import com.holybuckets.relicfuse.effect.ModPotions;
@@ -20,11 +22,7 @@ public class CommonClass {
         if (isInitialized)
             return;
 
-        Constants.LOG.info("Hello from Common init on {}! we are currently in a {} environment!", Services.PLATFORM.getPlatformName(), Services.PLATFORM.getEnvironmentName());
-        Constants.LOG.info("The ID for diamonds is {}", BuiltInRegistries.ITEM.getKey(Items.DIAMOND));
-
         com.holybuckets.foundation.FoundationInitializers.commonInitialize();
-
         if (Services.PLATFORM.isModLoaded(Constants.MOD_ID)) {
             Constants.LOG.info("Hello to " + Constants.MOD_NAME + "!");
         }
@@ -32,7 +30,8 @@ public class CommonClass {
         initRegistries(registrars);
 
         RelicFuseMain.INSTANCE = new RelicFuseMain();
-
+        BalmEventRegister.registerEvents();
+        BalmEventRegister.registerCommands();
         isInitialized = true;
     }
 
