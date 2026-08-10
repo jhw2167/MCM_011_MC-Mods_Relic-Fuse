@@ -42,15 +42,34 @@ tool fusions:
 ./archeologyproject/tooltextures/thunderhammertexture.png
 
 
-2. Get a Fuse process going
+2. Get a Fuse process going						XXXX - looks good
 
 	- lets try and fuse a material with a brush into the next tier
 	- Register all possible fuses
 
-3. Process fuse animation
+3. Process fuse animation						XXXX - looks good
 	- Client side custom entity moving animation
 
 
-4. Lets demonstrate this process on a netherite axe
+4. Write custom fuse item logic
+	- Take any fusable item - bone, crystal, fuse it with some vanilla tool
 
-	- 
+	- Generate new Common name for the item
+	- Item will still literrally be the item it was before, just with fuse nbt data
+	- Item name needs to be overriden on inventory hover and player select hover
+	- Item new abilities need to be added as description
+
+	Crystals:
+	Demonic Diamond Pick -> <Crstal> <tier> <toolname>	
+
+	bones:
+	Diamond Bone Pick -> <tier> <Bone> <ToolName>
+	
+	Visually
+	- Item hotbar and inventory glyph need to be visually updated with layers
+	- Item sprite in hand needs to physically be updated
+
+	Item interaction behaviors
+	- Player right/left click events
+	- Use large map to map to different behaviors by tool type -> fuse - or maybe large static classes that handle different behavioral use cases
+

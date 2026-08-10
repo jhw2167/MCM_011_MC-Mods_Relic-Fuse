@@ -7,6 +7,7 @@ import com.holybuckets.foundation.event.EventRegistrar;
 import com.holybuckets.foundation.event.custom.PlayerInteractEvent;
 import com.holybuckets.foundation.event.custom.SimpleMessageEvent;
 import com.holybuckets.foundation.networking.SimpleStringMessage;
+import com.holybuckets.relicfuse.component.FusionComponent;
 import com.holybuckets.relicfuse.effect.ModEffects;
 import com.holybuckets.relicfuse.item.IFusableItem;
 import com.holybuckets.relicfuse.item.IFusedTool;
@@ -20,7 +21,15 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.List;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.HashMap;
+import java.util.Map;
+import net.minecraft.network.chat.Component;
 
 public class FusionManager {
 
@@ -33,6 +42,8 @@ public class FusionManager {
 
     private static final Identifier PLACEHOLDER_RESULT = Identifier.fromNamespaceAndPath("hbs_relicfuse", "iron_brush");
 
+    private static final Map<ServerPlayer, Pair<ItemStack, ItemStack>> activeFusions = new HashMap<>();
+
     public static void init(EventRegistrar reg) {
         reg.registerOnPlayerInteract(PlayerInteractEvent.RightClickInteraction.class, FusionManager::playerUseItem);
         reg.registerOnSimpleMessage(FUSE_COMPLETE, FusionManager::onFuseComplete);
@@ -43,7 +54,7 @@ public class FusionManager {
         if (event.getLevel() == null || event.getLevel().isClientSide()) return;
 
         Player player = event.getPlayer();
-        if (player == null) return;
+        if (player == null || player.level().isClientSide()) return;
         if (!player.hasEffect(ModEffects.ancientPower)) return;
 
         ItemStack tool = player.getMainHandItem();
@@ -51,6 +62,7 @@ public class FusionManager {
         if (!isFusableTool(tool) || !isFusableItem(fusable)) return;
 
         String payload = buildPayload(tool, fusable);
+        activeFusions.put((ServerPlayer) player, Pair.of(tool.copy(), fusable.copy()));
 
         player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
         player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
@@ -58,30 +70,24 @@ public class FusionManager {
         SimpleStringMessage.createAndFire(player, FUSE_START, payload);
     }
 
-    private static void onFuseComplete(SimpleMessageEvent event) {
-        if (event.getPlayer() == null) return;
-        ServerPlayer player = resolveServerPlayer(event.getPlayer());
-        if (player == null) return;
+    private static void onFuseComplete(SimpleMessageEvent event)
+    {
+        if (event.getPlayer()==null || !(event.getPlayer() instanceof ServerPlayer player))
+            return;
+        Pair<ItemStack, ItemStack> stacks = activeFusions.remove(player);
+        if (stacks == null) return;
 
-        Item result = resolveResult(event.getMessage().content);
-        if (result == null) return;
+        ItemStack tool = stacks.getLeft();
+        ItemStack fusable = stacks.getRight();
+        ItemStack result = fuse(fusable, tool);
 
         Vec3 pos = player.getEyePosition().add(player.getLookAngle().scale(1.0));
-        ItemEntity drop = new ItemEntity(player.level(), pos.x, pos.y, pos.z, new ItemStack(result));
+        ItemEntity drop = new ItemEntity(player.level(), pos.x, pos.y, pos.z, result);
         drop.setDeltaMovement(Vec3.ZERO);
         drop.setPickUpDelay(20);
         player.level().addFreshEntity(drop);
     }
 
-    /**
-     * On an integrated server the event also fires with the client-side Player, so the
-     * server-side instance is looked up by uuid rather than trusting the event payload.
-     */
-    private static ServerPlayer resolveServerPlayer(Player player) {
-        MinecraftServer server = GeneralConfig.getInstance().getServer();
-        if (server == null) return null;
-        return server.getPlayerList().getPlayer(player.getUUID());
-    }
 
     public static boolean isFusableTool(ItemStack stack) {
         if (stack.isEmpty()) return false;
@@ -107,14 +113,24 @@ public class FusionManager {
         return json.toString();
     }
 
-    private static Item resolveResult(String payload) {
-        try {
-            JsonObject json = JsonParser.parseString(payload).getAsJsonObject();
-            Identifier id = Identifier.parse(json.get(KEY_RESULT).getAsString());
-            return BuiltInRegistries.ITEM.getOptional(id).orElse(null);
-        } catch (Exception e) {
-            return null;
-        }
+    /**
+     * Takes tool and modifiying bone, crystal etc. Returns tool back after adding new fused component data
+     * @param modifier
+     * @param tool
+     * @return tool
+     */
+    private static ItemStack fuse(ItemStack modifier, ItemStack tool)
+    {
+        if (modifier.isEmpty() || tool.isEmpty()) return ItemStack.EMPTY;
+        if (!isFusableTool(tool) || !isFusableItem(modifier)) return ItemStack.EMPTY;
+
+        ItemStack fused = tool.copy();
+        FusionComponent.apply(fused, modifier.getItem());
+        fused.set(DataComponents.ITEM_NAME, FusionNaming.buildName(modifier, tool));
+        Component loreList = FusionNaming.buildLore(modifier, tool);
+        fused.set(DataComponents.LORE, new ItemLore(List.of(loreList)));
+
+        return fused;
     }
 
 }

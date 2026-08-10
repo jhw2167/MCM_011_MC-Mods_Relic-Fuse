@@ -1,7 +1,6 @@
 package com.holybuckets.relicfuse.item;
 
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 
 public abstract class FusedToolItem extends Item implements IFusedTool {
 
@@ -9,8 +8,4 @@ public abstract class FusedToolItem extends Item implements IFusedTool {
         super(properties);
     }
 
-    @Override
-    public boolean isFused(ItemStack stack) {
-        return false;
-    }
 }

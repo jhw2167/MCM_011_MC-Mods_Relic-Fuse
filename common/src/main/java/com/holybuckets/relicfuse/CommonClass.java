@@ -3,6 +3,7 @@ package com.holybuckets.relicfuse;
 import com.holybuckets.foundation.event.BalmEventRegister;
 import com.holybuckets.foundation.event.EventRegistrar;
 import com.holybuckets.relicfuse.block.ModBlocks;
+import com.holybuckets.relicfuse.component.ModComponents;
 import com.holybuckets.relicfuse.effect.ModEffects;
 import com.holybuckets.relicfuse.effect.ModPotions;
 import com.holybuckets.relicfuse.item.ModItems;
@@ -40,6 +41,7 @@ public class CommonClass {
         registrars.items(ModItems::initialize);
         registrars.creativeModeTabs(ModItems::creativeTab);
         registrars.particleTypes(ModParticles::initialize);
+        ModComponents.register(registrars.registrar());
         ModEffects.register(registrars.registrar());
         ModPotions.register(registrars.registrar());
     }

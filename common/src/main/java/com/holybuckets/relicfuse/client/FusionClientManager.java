@@ -47,7 +47,12 @@ public class FusionClientManager {
 
     public static final double START_RADIUS = 0.55;
     public static final double END_RADIUS = 0.04;
-    public static final double RISE_HEIGHT = 0.75;
+    public static final double RISE_HEIGHT = 0.35;
+
+    /** Forward offset of the palm-up hands from the eye, and their drop below eye level. */
+    public static final double HAND_FORWARD = 0.85;
+    public static final double HAND_LATERAL = 0.42;
+    public static final double HAND_DROP = 0.38;
     public static final double ORBIT_REVOLUTIONS = 3.5;
     public static final double WOBBLE_AMPLITUDE = 0.22;
     public static final double WOBBLE_FREQUENCY = 34.0;
@@ -117,7 +122,7 @@ public class FusionClientManager {
     }
 
     private static Vec3 handPos(Vec3 eye, Vec3 look, Vec3 right, double side) {
-        return eye.add(look.scale(0.45)).add(right.scale(0.38 * side)).add(0.0, -0.45, 0.0);
+        return eye.add(look.scale(HAND_FORWARD)).add(right.scale(HAND_LATERAL * side)).add(0.0, -HAND_DROP, 0.0);
     }
 
     private static void spawnGlow(ClientLevel level, Vec3 pos) {
@@ -152,7 +157,8 @@ public class FusionClientManager {
             this.level = level;
             this.player = player;
             this.payload = payload;
-            this.origin = player.getEyePosition().add(player.getLookAngle().scale(0.6)).add(0.0, -0.5, 0.0);
+            Vec3 look = player.getLookAngle();
+            this.origin = player.getEyePosition().add(look.scale(HAND_FORWARD)).add(0.0, -HAND_DROP, 0.0);
             this.toolEntity = spawn(tool);
             this.fusableEntity = spawn(fusable);
         }
