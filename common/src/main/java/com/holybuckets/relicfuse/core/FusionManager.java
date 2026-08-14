@@ -1,8 +1,6 @@
 package com.holybuckets.relicfuse.core;
 
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.holybuckets.foundation.GeneralConfig;
 import com.holybuckets.foundation.console.IMessager;
 import com.holybuckets.foundation.event.EventRegistrar;
 import com.holybuckets.foundation.event.custom.PlayerInteractEvent;
@@ -10,23 +8,17 @@ import com.holybuckets.foundation.event.custom.SimpleMessageEvent;
 import com.holybuckets.foundation.networking.SimpleStringMessage;
 import com.holybuckets.relicfuse.CommonClass;
 import com.holybuckets.relicfuse.Constants;
-import com.holybuckets.relicfuse.RelicFuseMain;
 import com.holybuckets.relicfuse.component.FusionComponent;
 import com.holybuckets.relicfuse.effect.ModEffects;
 import com.holybuckets.relicfuse.item.IFusableItem;
-import com.holybuckets.relicfuse.item.IFusedTool;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.phys.Vec3;
 
@@ -36,6 +28,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.network.chat.Component;
+
+import javax.annotation.Nullable;
 
 public class FusionManager {
 
@@ -57,6 +51,10 @@ public class FusionManager {
         reg.registerOnSimpleMessage(FUSE_COMPLETE, FusionManager::onFuseComplete);
         MESSAGER = CommonClass.MESSAGER;
     }
+
+
+
+    //** CORE **//
 
     private static void playerUseItem(PlayerInteractEvent.RightClickInteraction event) {
         if (event.getHand() != InteractionHand.MAIN_HAND) return;
@@ -134,6 +132,16 @@ public class FusionManager {
         return !modifier.isEmpty() && modifier.getItem() instanceof IFusableItem;
     }
 
+    public static boolean isFused(ItemStack tool) {
+        return tool != null && !tool.isEmpty() && FusionComponent.isFused(tool);
+    }
+
+    @Nullable
+    public static Item getFusedItem(ItemStack tool) {
+        if (!isFused(tool)) return null;
+        return tool.get(FusionComponent.TYPE).getModifierOrNull();
+    }
+
 
     private static String readItemError(String enUsField) {
         return READ("item", Constants.MOD_ID, "fusion.error." + enUsField);
@@ -175,13 +183,16 @@ public class FusionManager {
         fused.set(DataComponents.ITEM_NAME, FusionNaming.buildName(modifier, tool));
         Component loreList = FusionNaming.buildLore(modifier, tool);
         fused.set(DataComponents.LORE, new ItemLore(List.of(loreList)));
-        fused.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(
-            List.of(),
-            List.of(),
-            List.of("relic_fused"),
-            tintsFor(modifier.getItem())));
 
+        FusionStats.initFusedItem( fused, modifier);
         return fused;
+    }
+
+
+    private static boolean isFusedWith(ItemStack modifier, Item test) {
+        if(modifier.isEmpty() || test == null) return false;
+        if(!modifier.has(FusionComponent.TYPE)) return false;
+        return fused.equals(test);
     }
 
     private static List<Integer> tintsFor(Item modifier) {

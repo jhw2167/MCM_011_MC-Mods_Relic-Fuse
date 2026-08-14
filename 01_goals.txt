@@ -74,6 +74,74 @@ tool fusions:
 	- Use large map to map to different behaviors by tool type -> fuse - or maybe large static classes that handle different behavioral use cases
 
 
+5. Fusing looks good, lets get into behavior
+
+Demonic - doubles existing damge based enchantments on a tool
+Fossilized - adds 3 sharpness, halves durability
+Ender bone - allows you to enchant this weapon or tool again
+
+Crystals 
+blessed crystal - greatly improves xp returned by using a tool
+demonic crystal - item mends itself by stealing your hearts (maybe?, I like the theme, but definitely overpowered, possibly annoying, maybe one time)
+earthCrystal - like an expanded Fortune upgrade (multiple logs from axes, multiple crops from hoes, will give you the ore itself as well when used with a pickaxe) I kinda like these being overpowered...
+electricCrystal - Items that mine blocks get a "vein miner" like effect, a sword will chain lightning attack
+toxicCrystal - idk, maybe this can change blockstates into other blocks - like dirt to gravel. Maybe its like veinminer for stones and dirt, just mines a big chunk of them. A sword or axe will afflict mobs with the toxic effect and when they tie they will leave a toxic corrosive hole.
+
+Wiki:
+
+Blessed Crystal:
+
+	- Mobs drop double the experience when slain (Sword, Spear, mace)
+	- Any mined ore drops experience (Pick Only)
+	- Any mined wood drops experience (Axe only)
+	- Any block with a tool bonus for shovel grants experience (shovel)
+	- Any tilled soil dorps experience (hoe)
+
+Demonic Crystal:
+
+	- 2 Enchanting levels are added to every enchantment on this item
+	- Every entity killed hurts you a heart
+	- Every block mined hurts you half a heart
+
+Earth Crystal:
+
+	- Entities slain may drop additional items (weapons)
+	- Blocks mined may drop additional items (tools)
+
+Toxic Crystal:
+
+	- Applies poison effect to enemies (weapons)
+	- mines chunks of area, drops much fewer blocks (tools)
+
+Lightning Crystal
+
+	- chain lightning attack on enemies when fully changed (weapons)
+	- chain lightning mining on blocks
+
+
+Gravity Crystal
+
+	- Applies levitation to mobs
+	- Applies gravity to blocks?
+
+Power Crystal
+
+	- owner grows stronger with their weapon over time
+	- mines faster
+
+Bones:
+
+Ender Bone
+
+	- Applies souldbound to this weapon or tool
+
+Fossilized
+	- adds sharpness, reduces durability
+
+
+
+Piston/Sticky piston
+
 
 HBS Foundation Backport:
 
@@ -90,3 +158,9 @@ HBS Foundation Backport:
         }
 
 needs to pass serverPlayer if integrated server
+
+- 26.1 we had a duplicate player attack and attack_event, check this
+
+- refactored parse inventory and added new matches inventory event
+
+- added new itemUtil events

@@ -8,6 +8,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
+import javax.annotation.Nullable;
+
 /**
  * Component dataType used to set Fused data on the weapon or item
  */
@@ -33,6 +35,7 @@ public class FusionComponent {
         return modifierId;
     }
 
+    @Nullable
     public Item getModifier() {
         return BuiltInRegistries.ITEM.getOptional(modifierId).orElse(null);
     }
@@ -62,4 +65,9 @@ public class FusionComponent {
         return modifierId.hashCode();
     }
 
+    @Nullable
+    public Item getModifierOrNull() {
+        if(modifierId == null) return null;
+        return getModifier();
+    }
 }
