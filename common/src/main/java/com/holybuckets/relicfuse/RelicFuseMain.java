@@ -6,6 +6,7 @@ import com.holybuckets.foundation.event.EventRegistrar;
 import com.holybuckets.foundation.event.balm.server.ServerStartingEvent;
 import com.holybuckets.relicfuse.config.TemplateConfig;
 import com.holybuckets.relicfuse.core.FusionManager;
+import com.holybuckets.relicfuse.core.ManagedPlayerFusions;
 
 /**
  * Main instance of the mod, initialize this class statically via commonClass
@@ -29,6 +30,7 @@ public class RelicFuseMain {
         EventRegistrar registrar = EventRegistrar.getInstance();
         registrar.registerOnBeforeServerStarted(this::onServerStarting);
         FusionManager.init(registrar);
+        ManagedPlayerFusions.init(registrar);
     }
 
     private void onServerStarting(ServerStartingEvent e) {

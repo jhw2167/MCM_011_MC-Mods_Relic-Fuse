@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "hbs_relicfuse:item/overlay/hoe_tint_bone_3"
+  }
+}

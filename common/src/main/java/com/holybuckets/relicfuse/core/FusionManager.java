@@ -50,6 +50,9 @@ public class FusionManager {
         reg.registerOnPlayerInteract(PlayerInteractEvent.RightClickInteraction.class, FusionManager::playerUseItem);
         reg.registerOnSimpleMessage(FUSE_COMPLETE, FusionManager::onFuseComplete);
         MESSAGER = CommonClass.MESSAGER;
+
+        FusionAbilities.init(reg);
+        FusionStats.init(reg);
     }
 
 
@@ -192,7 +195,7 @@ public class FusionManager {
     private static boolean isFusedWith(ItemStack modifier, Item test) {
         if(modifier.isEmpty() || test == null) return false;
         if(!modifier.has(FusionComponent.TYPE)) return false;
-        return fused.equals(test);
+        return modifier.equals(test);
     }
 
     private static List<Integer> tintsFor(Item modifier) {

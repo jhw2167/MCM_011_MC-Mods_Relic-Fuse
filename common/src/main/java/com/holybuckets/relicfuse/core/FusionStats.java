@@ -16,18 +16,30 @@ import java.util.function.Consumer;
 public class FusionStats {
 
     private static final float CRYSTAL_DURABILITY_MODIFIER = 0.5f; //multiplied by durability to get new durability
+    private static final float BONE_DURABILITY_MODIFIER = 1f; //multiplied by durability to get new durability
+
 
     public static void init(EventRegistrar registrar) {
         registrar.registerOnBeforeServerStarted(FusionStats::onBeforeServerStarted);
     }
 
-    public static void onBeforeServerStarted(ServerStartingEvent event) {
+    public static void onBeforeServerStarted(ServerStartingEvent event)
+    {
         TOOL_UPDATES = new HashMap<>();
         TOOL_UPDATES.put(ModItems.blessedCrystal.get(), BlessedCrystal.register);
         TOOL_UPDATES.put(ModItems.demonicCrystal.get(), DemonicCrystal.register);
         TOOL_UPDATES.put(ModItems.earthCrystal.get(), EarthCrystal.register);
         TOOL_UPDATES.put(ModItems.toxicCrystal.get(), ToxicCrystal.register);
         //TOOL_UPDATES.put(ModItems.lightningCrystal.get(), LightningCrystal.register);
+
+        //tool updates for bones
+        TOOL_UPDATES.put(ModItems.encasedBone.get(), EncasedBone.register);
+        TOOL_UPDATES.put(ModItems.overgrownBone.get(), OvergrownBone.register);
+        TOOL_UPDATES.put(ModItems.spiritedBone.get(), SpiritedBone.register);
+        TOOL_UPDATES.put(ModItems.toxicBone.get(), ToxicBone.register);
+        TOOL_UPDATES.put(ModItems.enderBone.get(), EnderBone.register);
+
+        //powders
 
     }
 
@@ -105,6 +117,40 @@ public class FusionStats {
         };
     }
 
+    //Encased Bone
+    public static class EncasedBone {
+        static Consumer<ItemStack> register = (sword) -> {
+            updateDurability(sword, BONE_DURABILITY_MODIFIER);
+        };
+    }
+
+    //Overgrown Bone
+    public static class OvergrownBone {
+        static Consumer<ItemStack> register = (sword) -> {
+            updateDurability(sword, BONE_DURABILITY_MODIFIER);
+        };
+    }
+
+    //Spirited Bone
+    public static class SpiritedBone {
+        static Consumer<ItemStack> register = (sword) -> {
+            updateDurability(sword, BONE_DURABILITY_MODIFIER);
+        };
+    }
+
+    //Toxic Bone
+    public static class ToxicBone {
+        static Consumer<ItemStack> register = (sword) -> {
+            updateDurability(sword, BONE_DURABILITY_MODIFIER);
+        };
+    }
+
+    //Ender Bone
+    public static class EnderBone {
+        static Consumer<ItemStack> register = (sword) -> {
+            updateDurability(sword, BONE_DURABILITY_MODIFIER);
+        };
+    }
 
     //** UTILITY **/
 

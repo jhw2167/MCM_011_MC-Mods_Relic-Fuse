@@ -32,14 +32,19 @@ TOOL_SUFFIXES = (
     ("_axe", "axe"),
 )
 
-# Which reference sprite belongs to which tool type; matched as a substring of the filename.
+# Which reference sprite belongs to which tool type, matched as substrings of the filename.
+# Several spellings per type because the hand-authored names are inconsistent (archeologyhofe,
+# boneHoe) and both kinds live in the same folder.
 REFERENCE_HINTS = {
-    "pick": "pickax",
-    "shovel": "shov",
-    "sword": "swor",
-    "hoe": "hofe",
-    "axe": "ax",
+    "pick": ("pickax", "pick"),
+    "shovel": ("shov",),
+    "sword": ("swor",),
+    "hoe": ("hofe", "hoe"),
+    "axe": ("axe", "ax"),
 }
+
+# Reference filenames are prefixed by kind, which is what keeps boneAxe apart from archeologyaxfe.
+KIND_REFERENCE_PREFIX = {"crystal": "archeology", "bone": "bone"}
 
 FOLDER_KINDS = {
     "crystal": "crystal", "crystals": "crystal",
@@ -106,13 +111,22 @@ def dedupe(kind, mods):
     return keep, ids, dropped
 
 
-def find_reference(references, tool_type):
+def find_reference(references, kind, tool_type):
     if not references:
         return None
-    hint = REFERENCE_HINTS.get(tool_type)
-    candidates = [p for p in sprites(references) if hint and hint in normalise(stem(p))]
-    if tool_type == "axe":
-        candidates = [p for p in candidates if "pickax" not in normalise(stem(p))]
+    prefix = KIND_REFERENCE_PREFIX.get(kind)
+    hints = REFERENCE_HINTS.get(tool_type, ())
+
+    candidates = []
+    for path in sprites(references):
+        name = normalise(stem(path))
+        if prefix and not name.startswith(prefix):
+            continue
+        if not any(h in name for h in hints):
+            continue
+        if tool_type == "axe" and "pickax" in name:
+            continue
+        candidates.append(path)
     return candidates[0] if candidates else None
 
 
@@ -123,9 +137,9 @@ def command(kind, tier, tool_type, tool_sprite, item, mods, ids, reference, shap
         f"--tool {tool_type}",
         f"--base {sh(tool_sprite)}",
     ]
-    if kind == "crystal":
+    if kind in ("crystal", "bone") and reference:
         parts.append(f"--reference {sh(reference)}")
-    if kind == "bone":
+    elif kind == "bone":
         parts.append(f"--shape {sh(shape)}")
     parts.append("--modifiers " + " ".join(sh(m) for m in mods))
     parts.append("--modifier-ids " + " ".join(ids))
@@ -208,7 +222,7 @@ def generate(args):
         title = f"# {kind.upper()} FUSIONS  ({len(mods)} modifiers)"
         lines.append(title + ("   -- PENDING, COMMENTED OUT" if skipped else ""))
         if kind == "bone":
-            lines.append(f"# hilt shape cut from {shape}")
+            lines.append(f"# reference art per tool; falls back to hilt cut from {shape}")
         lines.append("#" * 78)
         lines.append("")
 
@@ -216,7 +230,7 @@ def generate(args):
             group = [t for t in tools if t[0] == tier]
             lines.append(f"# --- {tier} " + "-" * (60 - len(tier)))
             for _, tool_type, sprite, item in sorted(group, key=lambda t: t[1]):
-                reference = find_reference(args.references, tool_type)
+                reference = find_reference(args.references, kind, tool_type)
                 if kind == "crystal" and reference is None:
                     lines.append(f"# no reference art for {tool_type}; skipped {item}")
                     continue

@@ -1,0 +1,1333 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "minecraft:component",
+    "component": "hbs_relicfuse:fusion",
+    "cases": [
+      {
+        "when": "hbs_relicfuse:bone1",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/diamond_hoe"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_struct_bone"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 3088674
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 4860224
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 8093291
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 13354661
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 13354661
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "hbs_relicfuse:bone2",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/diamond_hoe"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_struct_bone"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 1774613
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 4860222
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 8093291
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 13354661
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 13354661
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "hbs_relicfuse:bone3",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/diamond_hoe"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_struct_bone"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 2297874
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 3088674
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 4860224
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 8093291
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 13354661
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "hbs_relicfuse:bone4",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/diamond_hoe"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_struct_bone"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 2297874
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 4860224
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 8093291
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 8093291
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 13354661
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "hbs_relicfuse:bone5",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/diamond_hoe"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_struct_bone"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 5192766
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 8093291
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 13354661
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 13354661
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 13354661
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "hbs_relicfuse:earth_crystal",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/diamond_hoe"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_struct_crystal"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 421979
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 749661
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 3270027
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 7143350
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 12779489
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "hbs_relicfuse:blessed_crystal",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/diamond_hoe"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_struct_crystal"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 31512
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 38185
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 1564002
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 15391620
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 16314021
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "hbs_relicfuse:demonic_crystal",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/diamond_hoe"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_struct_crystal"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 9633821
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 12782896
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 15231876
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 16358031
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 16298409
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "hbs_relicfuse:electric_crystal",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/diamond_hoe"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_struct_crystal"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 606072
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 614776
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 4560859
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 5499639
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 13172731
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "hbs_relicfuse:toxic_crystal",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/diamond_hoe"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_struct_crystal"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 4391078
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 29579
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 2793995
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 1550628
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_crystal_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 3324167
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "hbs_relicfuse:encased_bone",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/diamond_hoe"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_struct_bone"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 6902086
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 8281416
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 9793872
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 10319964
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 11241057
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "hbs_relicfuse:ender_bone",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/diamond_hoe"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_struct_bone"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 206368
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 800560
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 1072721
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 3447176
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 9237730
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "hbs_relicfuse:overgrown_bone",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/diamond_hoe"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_struct_bone"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 2045752
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 7873845
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 9842746
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 11747904
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 5217905
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "hbs_relicfuse:spirited_bone",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/diamond_hoe"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_struct_bone"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 10509091
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 12945218
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 4322180
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 8582829
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 11533773
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "hbs_relicfuse:toxic_bone",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/diamond_hoe"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_struct_bone"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 212191
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 805583
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 1076910
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 3447149
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_bone_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 10679325
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "minecraft:blaze_powder",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/diamond_hoe"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_struct_powder"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 9777920
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 9777920
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 13460736
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 16763648
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 16777141
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "minecraft:bone_meal",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/diamond_hoe"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_struct_powder"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 4474213
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 5854591
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 8157853
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 8157853
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 8157853
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "minecraft:lapis_lazuli",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/diamond_hoe"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_struct_powder"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 1719695
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 1196171
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 3432131
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 3432131
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 7641066
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "minecraft:redstone",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/diamond_hoe"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_struct_powder"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 2949120
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 4261120
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 6031104
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 11144961
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 16711680
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "minecraft:sugar",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/diamond_hoe"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_struct_powder"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 5526632
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 5526632
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 5526632
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 5526632
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/hoe_tint_powder_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 5526632
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "minecraft:item/diamond_hoe"
+    }
+  }
+}

@@ -5,6 +5,336 @@
     "component": "hbs_relicfuse:fusion",
     "cases": [
       {
+        "when": "hbs_relicfuse:bone1",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/wooden_sword"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_struct_bone"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 3088674
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 4860224
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 8093291
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 13354661
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 13354661
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "hbs_relicfuse:bone2",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/wooden_sword"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_struct_bone"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 1774613
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 4860222
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 8093291
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 13354661
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 13354661
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "hbs_relicfuse:bone3",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/wooden_sword"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_struct_bone"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 2297874
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 3088674
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 4860224
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 8093291
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 13354661
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "hbs_relicfuse:bone4",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/wooden_sword"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_struct_bone"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 2297874
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 4860224
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 8093291
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 8093291
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 13354661
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "hbs_relicfuse:bone5",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/wooden_sword"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_struct_bone"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 5192766
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 8093291
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 13354661
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 13354661
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 13354661
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
         "when": "hbs_relicfuse:earth_crystal",
         "model": {
           "type": "minecraft:composite",
@@ -328,6 +658,336 @@
                 {
                   "type": "minecraft:constant",
                   "value": 3324167
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "hbs_relicfuse:encased_bone",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/wooden_sword"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_struct_bone"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 6902086
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 8281416
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 9793872
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 10319964
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 11241057
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "hbs_relicfuse:ender_bone",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/wooden_sword"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_struct_bone"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 206368
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 800560
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 1072721
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 3447176
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 9237730
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "hbs_relicfuse:overgrown_bone",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/wooden_sword"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_struct_bone"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 2045752
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 7873845
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 9842746
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 11747904
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 5217905
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "hbs_relicfuse:spirited_bone",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/wooden_sword"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_struct_bone"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 10509091
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 12945218
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 4322180
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 8582829
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 11533773
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "when": "hbs_relicfuse:toxic_bone",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "minecraft:item/wooden_sword"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_struct_bone"
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_0",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 212191
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_1",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 805583
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_2",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 1076910
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_3",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 3447149
+                }
+              ]
+            },
+            {
+              "type": "minecraft:model",
+              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_4",
+              "tints": [
+                {
+                  "type": "minecraft:constant",
+                  "value": 10679325
                 }
               ]
             }

@@ -56,8 +56,6 @@ public class ManagedPlayerFusions implements IManagedPlayer {
         ManagedPlayer.registerManagedPlayerData(ManagedPlayerFusions.class, () -> new ManagedPlayerFusions());
         CONFIG = GeneralConfig.getInstance();
         initEvents(registrar);
-        FusionAbilities.init(registrar);
-        FusionStats.init(registrar);
     }
 
     private static String getId(Player player) {
@@ -319,7 +317,7 @@ public class ManagedPlayerFusions implements IManagedPlayer {
 
     @Override
     public CompoundTag serializeNBT() {
-        return null;
+        return new CompoundTag();
     }
 
     @Override

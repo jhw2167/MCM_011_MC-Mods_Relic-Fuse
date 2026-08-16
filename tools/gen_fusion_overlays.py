@@ -4,7 +4,8 @@ The fused look is built as a composite over the base tool's own model, so nothin
 base sprite is copied or redistributed. Three overlay structures are supported:
 
   crystal  gild extracted from hand-authored reference art, split into luminance bands
-  bone     lower half of a bone sprite grafted onto the tool handle as a hilt
+  bone     hand-authored bone art diffed against the base tool (or, with --shape, a
+           bone sprite grafted onto the handle)
   powder   one-pixel dilation of the tool silhouette used as a faint glow ring
 
 Each structure emits an untinted structural layer plus N greyscale band layers. Band layers
@@ -20,7 +21,7 @@ Usage
 
   gen_fusion_overlays.py --kind bone --tool axe \
       --base vanilla/netherite_axe.png \
-      --shape art/itemtextures/encasedbone.png \
+      --reference art/tooltextures/boneAxe.png \
       --modifiers art/itemtextures/*bone*.png \
       --base-model minecraft:item/netherite_axe --item minecraft:netherite_axe
 
@@ -172,6 +173,39 @@ def build_crystal(base, reference, bands):
     return struct_layer, layers, anchors
 
 
+OUTLINE_VALUE = 0.25
+
+
+def build_bone_from_reference(base, reference, bands):
+    """Diff hand-authored bone art against the base tool.
+
+    Unlike the gild, bone material is desaturated (sat 0.05-0.19), so it cannot be picked out by
+    hue. Instead every pixel that differs from the base sprite is treated as bone: near-black
+    pixels become the untinted outline, the rest split into neutral grey luminance bands.
+    """
+    size = reference.size
+    outline, material = [], []
+
+    for y in range(size[1]):
+        for x in range(size[0]):
+            px = reference.getpixel((x, y))
+            if px[3] == 0:
+                continue
+            under = base.getpixel((x, y))
+            if under[3] != 0 and under[:3] == px[:3]:
+                continue
+
+            _, _, value = colorsys.rgb_to_hsv(px[0] / 255, px[1] / 255, px[2] / 255)
+            (outline if value < OUTLINE_VALUE else material).append((x, y, px))
+
+    struct = blank(size)
+    for x, y, px in outline:
+        struct.putpixel((x, y), px)
+
+    layers, anchors = band_layers(material, size, bands)
+    return struct, layers, anchors
+
+
 def build_bone(base, shape, bands):
     """The bone's lower half is wrapped along the tool handle rather than stamped onto it.
 
@@ -317,9 +351,13 @@ def generate(args):
             raise SystemExit("--reference is required for --kind crystal")
         struct, layers, anchors = build_crystal(base, load(args.reference), bands)
     elif args.kind == KIND_BONE:
-        if not args.shape:
-            raise SystemExit("--shape is required for --kind bone")
-        struct, layers, anchors = build_bone(base, load(args.shape), bands)
+        # Prefer hand-authored reference art; fall back to grafting a bone sprite onto the handle.
+        if args.reference:
+            struct, layers, anchors = build_bone_from_reference(base, load(args.reference), bands)
+        elif args.shape:
+            struct, layers, anchors = build_bone(base, load(args.shape), bands)
+        else:
+            raise SystemExit("--reference (preferred) or --shape is required for --kind bone")
     else:
         struct, layers, anchors = build_powder(base, bands)
 

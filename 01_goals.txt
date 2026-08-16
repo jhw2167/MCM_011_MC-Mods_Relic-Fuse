@@ -141,6 +141,10 @@ Fossilized
 
 
 Piston/Sticky piston
+	- adds knockback/pull. Play sound effect
+	- 
+
+Ancient Power tiers in 1,2,3 - you need higher tiers to fuse more advanced weapons
 
 
 HBS Foundation Backport:
