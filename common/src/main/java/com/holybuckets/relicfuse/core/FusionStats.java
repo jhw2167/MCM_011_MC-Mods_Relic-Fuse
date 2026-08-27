@@ -1,5 +1,6 @@
 package com.holybuckets.relicfuse.core;
 
+import com.holybuckets.foundation.HBUtil;
 import com.holybuckets.foundation.event.EventRegistrar;
 import com.holybuckets.foundation.event.balm.server.ServerStartingEvent;
 import com.holybuckets.relicfuse.item.ModItems;
@@ -7,6 +8,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -30,7 +32,7 @@ public class FusionStats {
         TOOL_UPDATES.put(ModItems.demonicCrystal.get(), DemonicCrystal.register);
         TOOL_UPDATES.put(ModItems.earthCrystal.get(), EarthCrystal.register);
         TOOL_UPDATES.put(ModItems.toxicCrystal.get(), ToxicCrystal.register);
-        //TOOL_UPDATES.put(ModItems.lightningCrystal.get(), LightningCrystal.register);
+        TOOL_UPDATES.put(ModItems.electricCrystal.get(), LightningCrystal.register);
 
         //tool updates for bones
         TOOL_UPDATES.put(ModItems.encasedBone.get(), EncasedBone.register);
@@ -39,7 +41,10 @@ public class FusionStats {
         TOOL_UPDATES.put(ModItems.toxicBone.get(), ToxicBone.register);
         TOOL_UPDATES.put(ModItems.enderBone.get(), EnderBone.register);
 
-        //powders
+        //powders -- not needed
+
+
+
 
     }
 
@@ -120,7 +125,9 @@ public class FusionStats {
     //Encased Bone
     public static class EncasedBone {
         static Consumer<ItemStack> register = (sword) -> {
-            updateDurability(sword, BONE_DURABILITY_MODIFIER);
+            //updateDurability(sword, BONE_DURABILITY_MODIFIER);
+            //add 2 levels of unbreaking
+            HBUtil.ItemUtil.addEnchant(sword, Enchantments.UNBREAKING, 2);
         };
     }
 
@@ -128,6 +135,7 @@ public class FusionStats {
     public static class OvergrownBone {
         static Consumer<ItemStack> register = (sword) -> {
             updateDurability(sword, BONE_DURABILITY_MODIFIER);
+            HBUtil.ItemUtil.addEnchant(sword, Enchantments.FORTUNE, 1);
         };
     }
 
@@ -135,6 +143,7 @@ public class FusionStats {
     public static class SpiritedBone {
         static Consumer<ItemStack> register = (sword) -> {
             updateDurability(sword, BONE_DURABILITY_MODIFIER);
+            HBUtil.ItemUtil.addEnchant(sword, Enchantments.EFFICIENCY, 1);
         };
     }
 
@@ -142,6 +151,7 @@ public class FusionStats {
     public static class ToxicBone {
         static Consumer<ItemStack> register = (sword) -> {
             updateDurability(sword, BONE_DURABILITY_MODIFIER);
+            HBUtil.ItemUtil.removeEnchant(sword, Enchantments.MENDING);
         };
     }
 
@@ -149,6 +159,7 @@ public class FusionStats {
     public static class EnderBone {
         static Consumer<ItemStack> register = (sword) -> {
             updateDurability(sword, BONE_DURABILITY_MODIFIER);
+            HBUtil.ItemUtil.removeEnchant(sword, Enchantments.VANISHING_CURSE);
         };
     }
 

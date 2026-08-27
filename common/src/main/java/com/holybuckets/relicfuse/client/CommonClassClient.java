@@ -10,6 +10,7 @@ public class CommonClassClient {
     public static void initClient(BalmClientRegistrars registrars) {
         registrars.particleProviders(ModParticleProviders::initialize);
         FusionClientManager.init(ClientEventRegistrar.getInstance());
+        FusionBolt.init(ClientEventRegistrar.getInstance());
     }
 
     public static void sample()

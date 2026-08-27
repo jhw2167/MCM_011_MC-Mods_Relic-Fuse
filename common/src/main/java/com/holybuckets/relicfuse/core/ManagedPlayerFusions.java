@@ -10,6 +10,7 @@ import com.holybuckets.foundation.event.balm.LivingDeathEvent;
 import com.holybuckets.foundation.event.balm.LivingFallEvent;
 import com.holybuckets.foundation.event.balm.LivingHealEvent;
 import com.holybuckets.foundation.event.balm.PlayerAttackEvent;
+import com.holybuckets.foundation.event.balm.PlayerRespawnEvent;
 import com.holybuckets.foundation.event.balm.TossItemEvent;
 import com.holybuckets.foundation.event.balm.UseBlockEvent;
 import com.holybuckets.foundation.event.custom.PlayerHasItemEvent;
@@ -19,6 +20,7 @@ import com.holybuckets.foundation.event.custom.TickType;
 import com.holybuckets.foundation.modelInterface.IManagedPlayer;
 import com.holybuckets.foundation.player.ManagedPlayer;
 import com.holybuckets.foundation.util.DeferredObject;
+import com.holybuckets.relicfuse.effect.ModEffects;
 import com.holybuckets.relicfuse.item.ModItems;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -153,6 +155,7 @@ public class ManagedPlayerFusions implements IManagedPlayer {
         registrar.registerOnPlayerDamage(ManagedPlayerFusions::onPlayerDamage);
         registrar.registerOnPlayerFall(ManagedPlayerFusions::onPlayerFall);
         registrar.registerOnPlayerHeal(ManagedPlayerFusions::onPlayerHeal);
+        registrar.registerOnPlayerRespawn(ManagedPlayerFusions::onPlayerRespawn);
 
         registrar.registerOnBreakBlock(ManagedPlayerFusions::onBreakBlock);
         registrar.registerOnDigSpeedEvent(ManagedPlayerFusions::onDigSpeed);
@@ -178,6 +181,15 @@ public class ManagedPlayerFusions implements IManagedPlayer {
         return p.getMainHandItem();
     }
 
+    public static boolean readyToFuse(ServerPlayer serverPlayer) {
+        if(serverPlayer == null) return false;
+        //check if player has ancient power effect
+        if(!serverPlayer.hasEffect(ModEffects.ancientPower)) return false;
+        ItemStack tool = serverPlayer.getMainHandItem();
+        ItemStack fusable = serverPlayer.getOffhandItem();
+        return FusionManager.isFusableTool(tool) && FusionManager.isFusableItem(fusable);
+    }
+
 
     /* COMBAT */
 
@@ -197,6 +209,7 @@ public class ManagedPlayerFusions implements IManagedPlayer {
         LivingEntity victim = event.getEntity();
 
         if (victim instanceof ServerPlayer dead) {
+            FusionAbilities.EnderBone.stashOnDeath(dead);
             Hooks own = hooks(dead);
             if (own != null) own.onPlayerDeath.run(dead, tool(dead), event.getDamageSource());
         }
@@ -227,6 +240,11 @@ public class ManagedPlayerFusions implements IManagedPlayer {
         Hooks h = hooks(sp);
         if (h == null) return;
         h.onPlayerHeal.run(sp, tool(sp), event.getAmount());
+    }
+
+
+    private static void onPlayerRespawn(PlayerRespawnEvent event) {
+        FusionAbilities.EnderBone.restoreOnRespawn(event.getNewPlayer());
     }
 
 
@@ -292,8 +310,10 @@ public class ManagedPlayerFusions implements IManagedPlayer {
 
     private static void onServerTick(ServerTickEvent event) {
         CONFIG.getLevels().values().forEach(level -> {
-            if(level instanceof ServerLevel sl)
+            if(level instanceof ServerLevel sl) {
                 FusionAbilities.ToxicCrystal.onTick(sl);
+                FusionAbilities.ElectricCrystal.onTick(sl);
+            }
         });
     }
 
@@ -324,6 +344,7 @@ public class ManagedPlayerFusions implements IManagedPlayer {
     public void deserializeNBT(CompoundTag nbt) {
 
     }
+
 
 
 
@@ -398,16 +419,28 @@ public class ManagedPlayerFusions implements IManagedPlayer {
 
         route(ModItems.electricCrystal, Hooks.of()
             .swordOnHurt(FusionAbilities.ElectricCrystal::swordOnHurt)
-            .toolOnBreakBlock(FusionAbilities.ElectricCrystal::toolOnBreakBlock));
+            .toolOnBreakBlock(FusionAbilities.ElectricCrystal::toolOnBreakBlock)
+            .toolOnUseBlock(FusionAbilities.ElectricCrystal::toolOnUseBlock));
 
         route(ModItems.toxicCrystal, Hooks.of()
             .swordOnHurt(FusionAbilities.ToxicCrystal::swordOnHurt)
             .toolOnBreakBlock(FusionAbilities.ToxicCrystal::toolOnBreakBlock));
 
         route(ModItems.encasedBone, Hooks.of());
-        route(ModItems.overgrownBone, Hooks.of());
-        route(ModItems.spiritedBone, Hooks.of());
-        route(ModItems.toxicBone, Hooks.of());
+
+        route(ModItems.overgrownBone, Hooks.of()
+            .swordOnHurt(FusionAbilities.OvergrownBone::swordOnHurt)
+            .toolOnUseBlock(FusionAbilities.OvergrownBone::toolOnUseBlock)
+            .toolOnBreakBlock(FusionAbilities.OvergrownBone::toolOnBreakBlock));
+
+        route(ModItems.spiritedBone, Hooks.of()
+            .onSwing(FusionAbilities.SpiritedBone::onSwing)
+            .toolOnBreakBlock(FusionAbilities.SpiritedBone::toolOnBreakBlock));
+
+        route(ModItems.toxicBone, Hooks.of()
+            .swordOnHurt(FusionAbilities.ToxicBone::swordOnHurt)
+            .onSwing(FusionAbilities.ToxicBone::onSwing));
+
         route(ModItems.enderBone, Hooks.of());
 
         return ROUTES;

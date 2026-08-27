@@ -94,8 +94,10 @@ Blessed Crystal:
 	- Mobs drop double the experience when slain (Sword, Spear, mace)
 	- Any mined ore drops experience (Pick Only)
 	- Any mined wood drops experience (Axe only)
+
 	- Any block with a tool bonus for shovel grants experience (shovel)
-	- Any tilled soil dorps experience (hoe)
+	- Crops harvested drop experience (hoe)
+
 
 Demonic Crystal:
 
@@ -113,10 +115,15 @@ Toxic Crystal:
 	- Applies poison effect to enemies (weapons)
 	- mines chunks of area, drops much fewer blocks (tools)
 
+	- NEED BETTER EFFECTS STAT
+
 Lightning Crystal
 
 	- chain lightning attack on enemies when fully changed (weapons)
 	- chain lightning mining on blocks
+
+	- NEED BETTER EFFECTS STAT
+	- Tilling with shovel will create new blocks like glass from sand
 
 
 Gravity Crystal
@@ -132,11 +139,31 @@ Power Crystal
 Bones:
 
 Ender Bone
-
 	- Applies souldbound to this weapon or tool
 
 Fossilized
 	- adds sharpness, reduces durability
+
+Encased Bone:
+	- Increases durability, reduces damage
+
+Overgrown bone:
+	- With shovel, grows plants when you til (shovel)
+	- Pickaxe (right click to grow vines on wall), drops mossy cobble
+	- Sword - applies a vine slowness effect to mobs when attacking
+
+	- 
+
+Toxic bone:
+
+	- Poisons the user
+	- Mines more blocks
+	- Does more damage on hit
+	- Kills crops on hit, creates coarse dirt
+
+Spirited Bone:
+	- Gives the user a random ability when they swing
+	- 
 
 
 
@@ -145,6 +172,28 @@ Piston/Sticky piston
 	- 
 
 Ancient Power tiers in 1,2,3 - you need higher tiers to fuse more advanced weapons
+
+
+
+To RELEASE
+---
+
+1. Add all bones, crystals to suspicious loot tables
+2. Make loot table random chance table
+3. Add structures to mod
+4. Add ancient power totem to mod
+5. Test brush behavior 
+6. Fix fuse behavior so items spawn at correct points; and anim
+7. Clean up, refine and test all behaviors
+8. Server Test
+9. Add spears
+10. Add Mace
+11. Add Trident
+12. 
+
+
+
+
 
 
 HBS Foundation Backport:

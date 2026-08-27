@@ -53,6 +53,7 @@ public class FusionManager {
 
         FusionAbilities.init(reg);
         FusionStats.init(reg);
+        FusionItemWeights.init(reg);
     }
 
 

@@ -34,7 +34,8 @@ public class FusionClientManager {
     public static ParticleOptions HAND_GLOW_PARTICLE;
     public static ParticleOptions FUSION_TRAIL_PARTICLE;
     public static ParticleOptions EXPLOSION_PARTICLE;
-    public static SoundEvent EXPLOSION_SOUND;
+    public static SoundEvent ANCIENT_POWER_AMBIENT;
+    public static SoundEvent ON_FUSE_SOUND;
 
     public static int HAND_GLOW_COLOR = 0xC9A227;
     public static float HAND_GLOW_SCALE = 0.8f;
@@ -58,6 +59,7 @@ public class FusionClientManager {
     public static final double WOBBLE_FREQUENCY = 34.0;
 
     private static final int HAND_GLOW_INTERVAL = 3;
+    private static final int AMBIENT_SOUND_INTERVAL = 60;
     private static int clientEntityId = -20000;
 
     private static FusionAnimation active;
@@ -66,7 +68,8 @@ public class FusionClientManager {
         HAND_GLOW_PARTICLE = new DustParticleOptions(HAND_GLOW_COLOR, HAND_GLOW_SCALE);
         FUSION_TRAIL_PARTICLE = ParticleTypes.ENCHANT;
         EXPLOSION_PARTICLE = ParticleTypes.EXPLOSION_EMITTER;
-        EXPLOSION_SOUND = SoundEvents.GENERIC_EXPLODE.value();
+        ANCIENT_POWER_AMBIENT = SoundEvents.BEACON_ACTIVATE;
+        ON_FUSE_SOUND = SoundEvents.BEACON_ACTIVATE;
 
         reg.registerOnSimpleMessage(FusionManager.FUSE_START, FusionClientManager::onFuseStart);
         reg.registerOnClientTick(TickType.ON_SINGLE_TICK, FusionClientManager::onClientTick);
@@ -99,8 +102,12 @@ public class FusionClientManager {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
 
-        if (mc.player.hasEffect(ModEffects.ancientPower) && mc.player.tickCount % HAND_GLOW_INTERVAL == 0) {
-            emitHandGlow(mc.level, mc.player);
+        if (mc.player.hasEffect(ModEffects.ancientPower) ) {
+
+            if( mc.player.tickCount % HAND_GLOW_INTERVAL == 0)
+                emitHandGlow(mc.level, mc.player);
+            if( mc.player.tickCount % AMBIENT_SOUND_INTERVAL == 0)
+                mc.level.playSound(mc.player, mc.player.blockPosition(), ANCIENT_POWER_AMBIENT, SoundSource.PLAYERS, 1.0F, 1.0F);
         }
 
         if (active != null && active.tick()) {
@@ -140,8 +147,7 @@ public class FusionClientManager {
     }
 
     /**
-     * Client-only display entities. They are added straight to the ClientLevel with negative ids so
-     * they cannot collide with server-assigned entity ids, and are never synced or picked up.
+     * Make the fused items do a little dance before being fused.
      */
     private static class FusionAnimation {
 
@@ -213,7 +219,7 @@ public class FusionClientManager {
         private void detonate() {
             Vec3 centre = origin.add(0.0, RISE_HEIGHT, 0.0);
             level.addParticle(EXPLOSION_PARTICLE, centre.x, centre.y, centre.z, 0.0, 0.0, 0.0);
-            level.playLocalSound(centre.x, centre.y, centre.z, EXPLOSION_SOUND, SoundSource.PLAYERS,
+            level.playLocalSound(centre.x, centre.y, centre.z, ON_FUSE_SOUND, SoundSource.PLAYERS,
                 EXPLOSION_VOLUME, EXPLOSION_PITCH, false);
             discard();
             SimpleStringMessage.createAndFire(player, FusionManager.FUSE_COMPLETE, payload);
