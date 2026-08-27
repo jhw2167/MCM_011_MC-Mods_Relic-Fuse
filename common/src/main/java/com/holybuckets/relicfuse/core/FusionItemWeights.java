@@ -59,10 +59,13 @@ public class FusionItemWeights {
         BRUSH_BONUS.put(ModItems.ironBrush.get(), 5);
         BRUSH_BONUS.put(ModItems.diamondBrush.get(), 8);
         BRUSH_BONUS.put(ModItems.netheriteBrush.get(), 12);
-        BRUSH_BONUS.put(ModItems.blazeForgedBrush.get(), 12);
-        BRUSH_BONUS.put(ModItems.earthHarvesterBrush.get(), 12);
-        BRUSH_BONUS.put(ModItems.spiritedBrush.get(), 12);
+
+        BRUSH_BONUS.put(ModItems.earthHarvesterBrush.get(), 15); //only yields bones
+        BRUSH_BONUS.put(ModItems.spiritedBrush.get(), 15);  //only yields crystals
+
         BRUSH_BONUS.put(ModItems.ultimateBrush.get(), 20);
+
+        BRUSH_BONUS.put(ModItems.blazeForgedBrush.get(), 12);
     }
 
     private static void loadRelicRareness() {
@@ -70,20 +73,17 @@ public class FusionItemWeights {
 
         RELIC_RARENESS.put(ModItems.encasedBone.get(), Rareness.RARE);
         RELIC_RARENESS.put(ModItems.overgrownBone.get(), Rareness.RARE);
-        RELIC_RARENESS.put(ModItems.spiritedBone.get(), Rareness.RARE);
+        RELIC_RARENESS.put(ModItems.spiritedBone.get(), Rareness.EPIC);
         RELIC_RARENESS.put(ModItems.toxicBone.get(), Rareness.RARE);
         RELIC_RARENESS.put(ModItems.enderBone.get(), Rareness.EPIC);
 
         RELIC_RARENESS.put(ModItems.earthCrystal.get(), Rareness.EPIC);
         RELIC_RARENESS.put(ModItems.blessedCrystal.get(), Rareness.EPIC);
-        RELIC_RARENESS.put(ModItems.demonicCrystal.get(), Rareness.EPIC);
+        RELIC_RARENESS.put(ModItems.demonicCrystal.get(), Rareness.LEGENDARY);
         RELIC_RARENESS.put(ModItems.toxicCrystal.get(), Rareness.EPIC);
         RELIC_RARENESS.put(ModItems.electricCrystal.get(), Rareness.LEGENDARY);
     }
 
-    public static int oddsOf(@Nullable Rareness rareness) {
-        return rareness == null ? 0 : RARENESS_ODDS[rareness.ordinal()];
-    }
 
     public static int brushBonus(@Nullable Item brush) {
         if (brush == null) return 0;
@@ -115,15 +115,15 @@ public class FusionItemWeights {
     }
 
     /**
-     * Empty slots left in the table are the chance of no relic at all, so the array is cleared
-     * rather than compacted.
+     * Fills RELICS array with 100 item instances to return to the player
      */
-    private static void buildTable(int bonus) {
+    private static void buildTable(int bonus)
+    {
         Arrays.fill(RELICS, null);
         int cursor = 0;
 
         for (Map.Entry<Item, Rareness> entry : RELIC_RARENESS.entrySet()) {
-            int odds = oddsOf(entry.getValue()) + bonus;
+            int odds = getIntRareness(entry.getValue()) + bonus;
             if (odds <= 0) continue;
 
             for (int i = 0; i < odds; i++) {
@@ -137,5 +137,9 @@ public class FusionItemWeights {
             }
         }
     }
+        //get rareness value
+        public static int getIntRareness(@Nullable Rareness rareness) {
+            return rareness == null ? 0 : RARENESS_ODDS[rareness.ordinal()];
+        }
 
 }
