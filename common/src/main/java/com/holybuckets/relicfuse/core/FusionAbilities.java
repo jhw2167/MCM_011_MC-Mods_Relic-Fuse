@@ -124,12 +124,13 @@ public class FusionAbilities {
     private static List<BlockPos> getRandomBlocksInArea(BlockPos center, int width, int height, int depth, float ignoreChance) {
         List<BlockPos> blocks = ShapeGen.cuboid(center, width, height, depth);
         Collections.shuffle(blocks, RANDOM);
-        List<BlockPos> result = new ArrayList<>();
+        Set<BlockPos> result = new HashSet<>();
         for (BlockPos pos : blocks) {
             if (tryChance(ignoreChance)) continue;
             result.add(pos);
         }
-        return result;
+        result.add(center);
+        return new ArrayList<>(result);
     }
 
     /** True when the attack cooldown has fully recovered, matching the vanilla crit window. */
@@ -469,21 +470,85 @@ public class FusionAbilities {
             living.addEffect(new MobEffectInstance(MobEffects.POISON, POISON_DURATION, amplifier), player);
         }
 
+        private static final int MAX_QUEUED_BLOCKS = 64;
+
+        /** Contamination climbs and spreads sideways, never down into unbroken ground. */
+        private static final Direction[] SPREAD_DIRECTIONS = {
+            Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST
+        };
+
         //Toxicity seeps into surrounding blocks and breaks them
         public static void toolOnBreakBlock(ServerPlayer player, ItemStack tool, BlockPos pos, BlockState state)
         {
-            ServerLevel level = player.level();
-            if(!tool.isCorrectToolForDrops(state)) return;
-
-            List<BlockPos> contaminated = getRandomBlocksInArea(pos, AREA_WIDTH, AREA_HEIGHT, AREA_DEPTH, 1-SKIP_CHANCE);
-            for(int i = 0; i < contaminated.size(); i++)
-            {
-                BlockPos afflicted = contaminated.get(i);
-                if (level.getBlockState(afflicted).isAir()) continue;
-                dissolvedMap.computeIfAbsent(player.level(), k -> new HashSet<>()).add(afflicted.immutable());
-                if( tryChance(SKIP_CHANCE) ) continue;
-                contaminated.add(afflicted.below());
+            if (isPickaxe(tool) || isShovel(tool)) {
+                pickShovelOnBreakBlock(player, tool, pos, state);
+            } else if (isAxe(tool)) {
+                axeOnBreakBlock(player, tool, pos, state);
             }
+        }
+
+        /**
+         * The cuboid seeds the queue, then contamination pathfinds outward from those seeds through
+         * anything solid.
+         */
+        private static void pickShovelOnBreakBlock(ServerPlayer player, ItemStack tool, BlockPos pos, BlockState state)
+        {
+            if (!tool.isCorrectToolForDrops(state)) return;
+
+            ServerLevel level = player.level();
+            List<BlockPos> seeds = getRandomBlocksInArea(pos, AREA_WIDTH, AREA_HEIGHT, AREA_DEPTH, SKIP_CHANCE);
+            if (!seeds.contains(pos)) seeds.add(pos);
+
+            contaminate(level, seeds, s -> !s.isAir());
+        }
+
+        //use pathfinding to find all connected leaf, leave, or log blocks and add them to the dissolve queue
+        private static void axeOnBreakBlock(ServerPlayer player, ItemStack tool, BlockPos pos, BlockState state)
+        {
+            if (!isWoodLike(state)) return;
+            contaminate(player.level(), List.of(pos), ToxicCrystal::isWoodLike);
+        }
+
+        private static boolean isWoodLike(BlockState state) {
+            return state.is(BlockTags.LOGS) || state.is(BlockTags.LEAVES);
+        }
+
+        /**
+         * Breadth first walk from every seed, stepping only to axis neighbours and never downward,
+         * capped at MAX_QUEUED_BLOCKS for the whole call.
+         */
+        private static void contaminate(ServerLevel level, Collection<BlockPos> seeds, Predicate<BlockState> match)
+        {
+            Set<BlockPos> queued = new LinkedHashSet<>();
+            Deque<BlockPos> frontier = new ArrayDeque<>();
+
+            for (BlockPos seed : seeds) {
+                if (queued.size() >= MAX_QUEUED_BLOCKS) break;
+                BlockPos start = seed.immutable();
+                if (!match.test(level.getBlockState(start))) continue;
+                if (queued.add(start)) frontier.add(start);
+            }
+
+            while (!frontier.isEmpty() && queued.size() < MAX_QUEUED_BLOCKS) {
+                BlockPos current = frontier.poll();
+
+                for (Direction direction : SPREAD_DIRECTIONS) {
+                    if (queued.size() >= MAX_QUEUED_BLOCKS) break;
+
+                    BlockPos next = current.relative(direction).immutable();
+                    if (queued.contains(next)) continue;
+                    if (!match.test(level.getBlockState(next))) continue;
+                    if (tryChance(SKIP_CHANCE)) continue;
+
+                    queued.add(next);
+                    frontier.add(next);
+                }
+            }
+
+            if (queued.isEmpty()) return;
+
+            dissolvedMap.computeIfAbsent(level, k -> new HashSet<>()).addAll(queued);
+            queued.forEach(p -> ToxicEffect.contaminate(level, p));
         }
 
         /**

@@ -29,6 +29,7 @@
   "item.hbs_relicfuse.rapid_strike_glove": "Rapid Strike Glove",
   "item.hbs_relicfuse.single_strike_glove": "Single Strike Glove",
   "item.hbs_relicfuse.thunder_hammer": "Thunder Hammer",
+  "item.hbs_relicfuse.ancient_totem": "Ancient Totem",
   "item.hbs_relicfuse.fusion.error.no_tool": "Requires a tool or weapon to fuse",
   "item.hbs_relicfuse.fusion.error.fused_tool": "Tool has already been fused",
   "item.hbs_relicfuse.fusion.error.no_fusable": "Place fusable item in your offhand to fuse",

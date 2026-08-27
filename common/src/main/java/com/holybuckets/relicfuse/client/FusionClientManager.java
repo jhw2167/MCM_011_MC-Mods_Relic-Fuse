@@ -10,6 +10,7 @@ import com.holybuckets.foundation.networking.SimpleStringMessage;
 import com.holybuckets.relicfuse.LoggerProject;
 import com.holybuckets.relicfuse.core.FusionManager;
 import com.holybuckets.relicfuse.effect.ModEffects;
+import com.holybuckets.relicfuse.item.ModItems;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -72,7 +73,36 @@ public class FusionClientManager {
         ON_FUSE_SOUND = SoundEvents.BEACON_ACTIVATE;
 
         reg.registerOnSimpleMessage(FusionManager.FUSE_START, FusionClientManager::onFuseStart);
+        reg.registerOnSimpleMessage(FusionManager.TOTEM_USED, FusionClientManager::onTotemUsed);
         reg.registerOnClientTick(TickType.ON_SINGLE_TICK, FusionClientManager::onClientTick);
+    }
+
+    public static int TOTEM_PARTICLE_COUNT = 30;
+    public static float TOTEM_VOLUME = 1.0f;
+    public static float TOTEM_PITCH = 1.0f;
+
+    /**
+     * Mirrors the vanilla totem sequence: the item flash is driven client side so the ancient totem
+     * texture is shown rather than the vanilla totem hardcoded by the entity event.
+     */
+    private static void onTotemUsed(SimpleMessageEvent event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || mc.level == null) return;
+
+        mc.gameRenderer.displayItemActivation(new ItemStack(ModItems.ancientTotem.get()));
+
+        for (int i = 0; i < TOTEM_PARTICLE_COUNT; i++) {
+            mc.level.addParticle(ParticleTypes.TOTEM_OF_UNDYING,
+                mc.player.getX() + (mc.level.getRandom().nextDouble() - 0.5) * 1.6,
+                mc.player.getY() + mc.level.getRandom().nextDouble() * 2.0,
+                mc.player.getZ() + (mc.level.getRandom().nextDouble() - 0.5) * 1.6,
+                (mc.level.getRandom().nextDouble() - 0.5) * 0.4,
+                mc.level.getRandom().nextDouble() * 0.4,
+                (mc.level.getRandom().nextDouble() - 0.5) * 0.4);
+        }
+
+        mc.level.playLocalSound(mc.player.getX(), mc.player.getY(), mc.player.getZ(),
+            SoundEvents.TOTEM_USE, SoundSource.PLAYERS, TOTEM_VOLUME, TOTEM_PITCH, false);
     }
 
     private static void onFuseStart(SimpleMessageEvent event) {

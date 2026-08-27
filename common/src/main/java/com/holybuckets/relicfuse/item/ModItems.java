@@ -5,6 +5,7 @@ import com.holybuckets.foundation.util.DeferredObject;
 import com.holybuckets.relicfuse.Constants;
 import com.holybuckets.relicfuse.item.fusable.BoneItem;
 import com.holybuckets.relicfuse.item.fusable.CrystalItem;
+import com.holybuckets.relicfuse.item.tool.AncientTotemItem;
 import com.holybuckets.relicfuse.item.tool.BrushItem;
 import com.holybuckets.relicfuse.item.tool.FusedAxeItem;
 import com.holybuckets.relicfuse.item.tool.FusedHoeItem;
@@ -58,6 +59,7 @@ public class ModItems {
     public static DeferredItem rapidStrikeGloveItem;
     public static DeferredItem singleStrikeGloveItem;
     public static DeferredItem thunderHammerItem;
+    public static DeferredItem ancientTotemItem;
 
     public static DeferredObject<Item> ironBrush;
     public static DeferredObject<Item> diamondBrush;
@@ -88,6 +90,7 @@ public class ModItems {
     public static DeferredObject<Item> rapidStrikeGlove;
     public static DeferredObject<Item> singleStrikeGlove;
     public static DeferredObject<Item> thunderHammer;
+    public static DeferredObject<Item> ancientTotem;
 
     public static void initialize(BalmItemRegistrar items) {
         ITEMS.clear();
@@ -166,6 +169,9 @@ public class ModItems {
 
         thunderHammerItem = items.register("thunder_hammer", ThunderHammerItem::new, props -> props.durability(512)).asDeferredItem();
         thunderHammer = track(thunderHammerItem);
+
+        ancientTotemItem = items.register("ancient_totem", AncientTotemItem::new, props -> props.stacksTo(1)).asDeferredItem();
+        ancientTotem = track(ancientTotemItem);
     }
 
     /*CreativeModeTab.DisplayItemsGenerator generator = (parameters, output) -> {

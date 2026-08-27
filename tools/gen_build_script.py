@@ -26,11 +26,24 @@ import re
 # Longest suffix first so pickaxe is not swallowed by axe.
 TOOL_SUFFIXES = (
     ("_pickaxe", "pick"),
+    ("_trident", "trident"),
     ("_shovel", "shovel"),
     ("_sword", "sword"),
+    ("_spear", "spear"),
+    ("_mace", "mace"),
     ("_hoe", "hoe"),
     ("_axe", "axe"),
 )
+
+# Vanilla items with no material tier in the name, so the whole filename is the tool type.
+UNTIERED_TOOLS = {
+    "trident": "trident",
+    "mace": "mace",
+}
+UNTIERED_LABEL = "untiered"
+
+# Tool types with no vanilla counterpart; their item ids resolve into the mod namespace.
+MODDED_TOOL_TYPES = {"spear"}
 
 # Which reference sprite belongs to which tool type, matched as substrings of the filename.
 # Several spellings per type because the hand-authored names are inconsistent (archeologyhofe,
@@ -41,10 +54,14 @@ REFERENCE_HINTS = {
     "sword": ("swor",),
     "hoe": ("hofe", "hoe"),
     "axe": ("axe", "ax"),
+    "trident": ("trident",),
+    "spear": ("spear",),
+    "mace": ("mace",),
 }
 
 # Reference filenames are prefixed by kind, which is what keeps boneAxe apart from archeologyaxfe.
-KIND_REFERENCE_PREFIX = {"crystal": "archeology", "bone": "bone"}
+# Crystal art is inconsistent: the original tools are archeology*, the newer weapons are crystal*.
+KIND_REFERENCE_PREFIXES = {"crystal": ("archeology", "crystal"), "bone": ("bone",)}
 
 FOLDER_KINDS = {
     "crystal": "crystal", "crystals": "crystal",
@@ -80,11 +97,20 @@ def normalise(name):
 
 
 def parse_tool(path):
-    """netherite_axe.png -> (netherite, axe, minecraft:netherite_axe)"""
+    """netherite_axe.png -> (netherite, axe, minecraft:netherite_axe)
+
+    trident.png carries no tier, and spears have no vanilla item, so both are special cased.
+    The _in_hand sprites fall out on their own: they no longer end in a tool suffix."""
     name = normalise(stem(path))
+
+    tool_type = UNTIERED_TOOLS.get(name)
+    if tool_type:
+        return UNTIERED_LABEL, tool_type, f"minecraft:{name}"
+
     for suffix, tool_type in TOOL_SUFFIXES:
         if name.endswith(suffix):
-            return name[:-len(suffix)], tool_type, f"minecraft:{name}"
+            namespace = "hbs_relicfuse" if tool_type in MODDED_TOOL_TYPES else "minecraft"
+            return name[:-len(suffix)], tool_type, f"{namespace}:{name}"
     return None, None, None
 
 
@@ -114,13 +140,13 @@ def dedupe(kind, mods):
 def find_reference(references, kind, tool_type):
     if not references:
         return None
-    prefix = KIND_REFERENCE_PREFIX.get(kind)
+    prefixes = KIND_REFERENCE_PREFIXES.get(kind, ())
     hints = REFERENCE_HINTS.get(tool_type, ())
 
     candidates = []
     for path in sprites(references):
         name = normalise(stem(path))
-        if prefix and not name.startswith(prefix):
+        if prefixes and not any(name.startswith(p) for p in prefixes):
             continue
         if not any(h in name for h in hints):
             continue
@@ -131,6 +157,7 @@ def find_reference(references, kind, tool_type):
 
 
 def command(kind, tier, tool_type, tool_sprite, item, mods, ids, reference, shape, args):
+    item_namespace, item_path = item.split(":", 1)
     parts = [
         sh(args.script),
         f"--kind {kind}",
@@ -144,7 +171,7 @@ def command(kind, tier, tool_type, tool_sprite, item, mods, ids, reference, shap
     parts.append("--modifiers " + " ".join(sh(m) for m in mods))
     parts.append("--modifier-ids " + " ".join(ids))
     parts += [
-        f"--base-model minecraft:item/{item.split(':', 1)[1]}",
+        f"--base-model {item_namespace}:item/{item_path}",
         f"--item {item}",
         f"--component {args.component}",
         f"--namespace {args.namespace}",

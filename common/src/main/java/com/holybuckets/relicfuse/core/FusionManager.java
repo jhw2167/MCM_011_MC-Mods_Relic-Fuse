@@ -35,6 +35,7 @@ public class FusionManager {
 
     public static final String FUSE_START = "fuse_start";
     public static final String FUSE_COMPLETE = "fuse_complete";
+    public static final String TOTEM_USED = "totem_used";
 
     public static final String KEY_TOOL = "tool";
     public static final String KEY_FUSABLE = "fusable";
@@ -54,6 +55,7 @@ public class FusionManager {
         FusionAbilities.init(reg);
         FusionStats.init(reg);
         FusionItemWeights.init(reg);
+        FusionBrushTiers.init(reg);
     }
 
 
@@ -70,7 +72,9 @@ public class FusionManager {
 
         ItemStack tool = player.getMainHandItem();
         ItemStack fusable = player.getOffhandItem();
-        if (!isFusableTool(player, tool) || !isFusableItem(player, fusable)) return;
+
+        if (tool.isEmpty() || fusable.isEmpty()) return;
+        if (!canFuse(player, tool, fusable)) return;
 
         String payload = buildPayload(tool, fusable);
         activeFusions.put((ServerPlayer) player, Pair.of(tool.copy(), fusable.copy()));
@@ -99,6 +103,16 @@ public class FusionManager {
         player.level().addFreshEntity(drop);
     }
 
+
+    /**
+     * A brush holding the correct ingot skips the normal tool validation, so an already fused brush
+     * can still be raised a tier.
+     */
+    private static boolean canFuse(Player p, ItemStack tool, ItemStack fusable) {
+        if(tool.getItem() instanceof BrushItem && FusionBrushTiers.hasTier(fusable.getItem()))
+            return true;
+        return isFusableTool(p, tool) && isFusableItem(p, fusable);
+    }
 
     public static boolean isFusableTool(Player p, ItemStack tool) {
         if (tool.isEmpty()) {
@@ -180,6 +194,11 @@ public class FusionManager {
     private static ItemStack fuse(ItemStack modifier, ItemStack tool)
     {
         if (modifier.isEmpty() || tool.isEmpty()) return ItemStack.EMPTY;
+
+        if(tool.getItem() instanceof BrushItem)
+            if (FusionBrushTiers.hasTier(modifier.getItem()))
+                return FusionBrushTiers.BRUSH_UPGRADES.get(modifier.getItem()).getDefaultInstance();
+
         if (!isFusableTool(tool) || !isFusableItem(modifier)) return ItemStack.EMPTY;
 
         ItemStack fused = tool.copy();
