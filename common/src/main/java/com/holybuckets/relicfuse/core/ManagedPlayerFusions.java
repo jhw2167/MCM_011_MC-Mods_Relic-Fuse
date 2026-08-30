@@ -134,6 +134,60 @@ public class ManagedPlayerFusions implements IManagedPlayer {
     }
 
 
+    //** SOULBOUND **//
+
+    /** Held between death and respawn; dumped on logout so nothing is lost to a disconnect. */
+    private final List<ItemStack> soulbound = new ArrayList<>();
+    private Vec3 lastKnownPos = Vec3.ZERO;
+    private ServerLevel lastKnownLevel;
+
+    /**
+     * Pulls every ender bone fused item out of the inventory before vanilla drops it, so the stacks
+     * are never on the ground and cannot be duplicated regardless of the keep inventory rule.
+     */
+    private void stashSoulbound() {
+        if (!(this.player instanceof ServerPlayer serverPlayer)) return;
+
+        Item enderBone = ModItems.enderBone == null ? null : ModItems.enderBone.get();
+        if (enderBone == null) return;
+
+        rememberLocation(serverPlayer);
+        Inventory inventory = serverPlayer.getInventory();
+
+        for (int i = 0; i < inventory.getContainerSize(); i++) {
+            ItemStack stack = inventory.getItem(i);
+            if (stack.isEmpty()) continue;
+            if (!enderBone.equals(FusionManager.getFusedItem(stack))) continue;
+
+            soulbound.add(stack.copy());
+            inventory.setItem(i, ItemStack.EMPTY);
+        }
+    }
+
+    private void restoreSoulbound(ServerPlayer respawned) {
+        if (soulbound.isEmpty()) return;
+        soulbound.forEach(stack -> respawned.getInventory().placeItemBackInInventory(stack));
+        soulbound.clear();
+    }
+
+    /** A disconnect never reaches a respawn, so anything still held is dropped where they stood. */
+    private void dumpSoulbound() {
+        if (soulbound.isEmpty() || lastKnownLevel == null) return;
+
+        for (ItemStack stack : soulbound) {
+            if (stack.isEmpty()) continue;
+            lastKnownLevel.addFreshEntity(new ItemEntity(
+                lastKnownLevel, lastKnownPos.x, lastKnownPos.y, lastKnownPos.z, stack));
+        }
+        soulbound.clear();
+    }
+
+    private void rememberLocation(ServerPlayer serverPlayer) {
+        this.lastKnownPos = serverPlayer.position();
+        this.lastKnownLevel = serverPlayer.level();
+    }
+
+
     //** PLAYER TICKS ***//
 
     private void onPlayer20Ticks(ServerTickEvent event) {
@@ -198,7 +252,7 @@ public class ManagedPlayerFusions implements IManagedPlayer {
         lastAttackerMap.put(event.getTarget(), server(event.getPlayer()));
         if (h == null) return;
         ServerPlayer sp = server(event.getPlayer());
-        h.swordOnHurt.run(sp, tool(sp), event.getTarget());
+        h.weaponOnHurt.run(sp, tool(sp), event.getTarget());
     }
 
     /**
@@ -209,7 +263,9 @@ public class ManagedPlayerFusions implements IManagedPlayer {
         LivingEntity victim = event.getEntity();
 
         if (victim instanceof ServerPlayer dead) {
-            FusionAbilities.EnderBone.stashOnDeath(dead);
+            ManagedPlayerFusions fusions = getManagedFusions(dead);
+            if (fusions != null) fusions.stashSoulbound();
+
             Hooks own = hooks(dead);
             if (own != null) own.onPlayerDeath.run(dead, tool(dead), event.getDamageSource());
         }
@@ -363,11 +419,11 @@ public class ManagedPlayerFusions implements IManagedPlayer {
 
     /**
      * Hooks a modifier chooses to answer. Every slot defaults to a no-op, so a modifier only
-     * names the hooks it actually implements and unused abilities need no stub at all.
+     * names the hooks it needs
      */
     public static final class Hooks {
 
-        EntityHook swordOnHurt = (p, t, e) -> {};
+        EntityHook weaponOnHurt = (p, t, e) -> {};
         DeathHook swordOnDeath = (p, t, s, e) -> {};
         PlainHook onSwing = (p, t) -> {};
         PlainHook toolOnRightClick = (p, t) -> {};
@@ -384,7 +440,7 @@ public class ManagedPlayerFusions implements IManagedPlayer {
 
         public static Hooks of() { return new Hooks(); }
 
-        public Hooks swordOnHurt(EntityHook h) { if (h != null) swordOnHurt = h; return this; }
+        public Hooks swordOnHurt(EntityHook h) { if (h != null) weaponOnHurt = h; return this; }
         public Hooks swordOnDeath(DeathHook h) { if (h != null) swordOnDeath = h; return this; }
         public Hooks onSwing(PlainHook h) { if (h != null) onSwing = h; return this; }
         public Hooks toolOnRightClick(PlainHook h) { if (h != null) toolOnRightClick = h; return this; }
@@ -415,7 +471,9 @@ public class ManagedPlayerFusions implements IManagedPlayer {
 
         route(ModItems.earthCrystal, Hooks.of()
             .swordOnDeath(FusionAbilities.EarthCrystal::swordOnDeath)
-            .toolOnBreakBlock(FusionAbilities.EarthCrystal::toolOnBreakBlock));
+            .toolOnBreakBlock(FusionAbilities.EarthCrystal::toolOnBreakBlock)
+            .toolOnUseBlock(FusionAbilities.EarthCrystal::toolOnUseBlock));
+
 
         route(ModItems.electricCrystal, Hooks.of()
             .swordOnHurt(FusionAbilities.ElectricCrystal::swordOnHurt)
@@ -423,7 +481,7 @@ public class ManagedPlayerFusions implements IManagedPlayer {
             .toolOnUseBlock(FusionAbilities.ElectricCrystal::toolOnUseBlock));
 
         route(ModItems.toxicCrystal, Hooks.of()
-            .swordOnHurt(FusionAbilities.ToxicCrystal::swordOnHurt)
+            .swordOnHurt(FusionAbilities.ToxicCrystal::weapOnHurt)
             .toolOnBreakBlock(FusionAbilities.ToxicCrystal::toolOnBreakBlock));
 
         route(ModItems.encasedBone, Hooks.of());

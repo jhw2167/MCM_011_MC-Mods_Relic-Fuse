@@ -97,7 +97,22 @@ public class FusionManager {
         ItemStack result = fuse(fusable, tool);
 
         Vec3 pos = player.getEyePosition().add(player.getLookAngle().scale(1.0));
-        ItemEntity drop = new ItemEntity(player.level(), pos.x, pos.y, pos.z, result);
+
+        // Both hands were emptied before the animation, so a failed fusion has to hand them back
+        // rather than dropping an empty stack and destroying the pair.
+        if (result.isEmpty()) {
+            MESSAGER.sendBottomActionHint(player, readItemError("no_tool"));
+            dropAt(player, pos, tool);
+            dropAt(player, pos, fusable);
+            return;
+        }
+
+        dropAt(player, pos, result);
+    }
+
+    private static void dropAt(ServerPlayer player, Vec3 pos, ItemStack stack) {
+        if (stack.isEmpty()) return;
+        ItemEntity drop = new ItemEntity(player.level(), pos.x, pos.y, pos.z, stack);
         drop.setDeltaMovement(Vec3.ZERO);
         drop.setPickUpDelay(20);
         player.level().addFreshEntity(drop);
@@ -114,14 +129,29 @@ public class FusionManager {
         return isFusableTool(p, tool) && isFusableItem(p, fusable);
     }
 
+    /**
+     * Single definition of what the fuser accepts, so the hint path and the silent path cannot
+     * disagree and strand a tool mid fusion.
+     */
+    public static boolean acceptsFusion(ItemStack tool) {
+        if (tool == null || tool.isEmpty()) return false;
+        if (tool.has(DataComponents.TOOL)) return true;
+        if (tool.getItem() instanceof BrushItem) return true;
+        return tool.getItem().getDescriptionId().contains("spear");
+    }
+
     public static boolean isFusableTool(Player p, ItemStack tool) {
         if (tool.isEmpty()) {
             MESSAGER.sendBottomActionHint(p, readItemError("no_tool"));
             return false;
-        } else if(tool.has(FusionComponent.TYPE) ) {
+        }
+
+        if (tool.has(FusionComponent.TYPE)) {
             MESSAGER.sendBottomActionHint(p, readItemError("fused_tool"));
             return false;
-        } else if(!(tool.has(DataComponents.TOOL) || tool.getItem().equals(Items.BRUSH) )) {
+        }
+
+        if (!acceptsFusion(tool)) {
             MESSAGER.sendBottomActionHint(p, readItemError("no_tool"));
             return false;
         }
@@ -143,7 +173,7 @@ public class FusionManager {
 
     /** Silent variants for validation away from a player interaction. */
     public static boolean isFusableTool(ItemStack tool) {
-        return !tool.isEmpty() && !tool.has(FusionComponent.TYPE) && tool.has(DataComponents.TOOL);
+        return !tool.has(FusionComponent.TYPE) && acceptsFusion(tool);
     }
 
     public static boolean isFusableItem(ItemStack modifier) {
@@ -203,24 +233,14 @@ public class FusionManager {
 
         ItemStack fused = tool.copy();
         FusionComponent.apply(fused, modifier.getItem());
+        // FusionStats adds enchantments, whose glint would wash out the fusion overlay.
+        fused.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, false);
         fused.set(DataComponents.ITEM_NAME, FusionNaming.buildName(modifier, tool));
         Component loreList = FusionNaming.buildLore(modifier, tool);
         fused.set(DataComponents.LORE, new ItemLore(List.of(loreList)));
 
         FusionStats.initFusedItem( fused, modifier);
         return fused;
-    }
-
-
-    private static boolean isFusedWith(ItemStack modifier, Item test) {
-        if(modifier.isEmpty() || test == null) return false;
-        if(!modifier.has(FusionComponent.TYPE)) return false;
-        return modifier.equals(test);
-    }
-
-    private static List<Integer> tintsFor(Item modifier) {
-        // one 5-colour ramp per modifier; gold placeholder until the table exists
-        return List.of(7677954, 6835742, 11691025, 14456339, 16643423);
     }
 
 }

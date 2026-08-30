@@ -36,6 +36,7 @@ public class FusionBrushTiers {
     private static void onBeforeServerStarted(ServerStartingEvent event) {
         BRUSH_UPGRADES.clear();
         BRUSH_UPGRADES.put(Items.IRON_INGOT, ModItems.ironBrush.get());
+        BRUSH_UPGRADES.put(Items.GOLD_INGOT, ModItems.goldBrush.get());
         BRUSH_UPGRADES.put(Items.DIAMOND, ModItems.diamondBrush.get());
         BRUSH_UPGRADES.put(Items.NETHERITE_INGOT, ModItems.netheriteBrush.get());
 

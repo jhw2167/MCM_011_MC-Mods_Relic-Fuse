@@ -1,6 +1,7 @@
 package com.holybuckets.relicfuse.mixin;
 
 import com.holybuckets.relicfuse.client.FusionBolt;
+import com.holybuckets.relicfuse.client.FusionClientManager;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -20,5 +21,6 @@ public class LevelRendererMixin {
     private void relicfuse$submitFusionBolts(PoseStack poseStack, LevelRenderState levelRenderState,
                                              SubmitNodeCollector collector, CallbackInfo ci) {
         FusionBolt.submitBolts(poseStack, collector, levelRenderState.cameraRenderState.pos);
+        FusionClientManager.submitAnimation(poseStack, collector, levelRenderState.cameraRenderState.pos);
     }
 }

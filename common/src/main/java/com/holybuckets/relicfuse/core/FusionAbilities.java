@@ -25,7 +25,10 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.DropExperienceBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -133,6 +136,88 @@ public class FusionAbilities {
         return new ArrayList<>(result);
     }
 
+    /* FLOOD FILL */
+
+    /** The six axis neighbours. */
+    public static final Direction[] AXIS_NEIGHBOURS = Direction.values();
+
+    /** Axis neighbours minus DOWN, for effects that climb rather than sink. */
+    public static final Direction[] UPWARD_NEIGHBOURS = {
+        Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST
+    };
+
+    /** The four compass neighbours, for effects that spread across a flat surface. */
+    public static final Direction[] HORIZONTAL_NEIGHBOURS = {
+        Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST
+    };
+
+    /** All 26 surrounding blocks, so diagonally touching blocks stay part of one vein. */
+    public static final Direction[] DIAGONAL_NEIGHBOURS = null;
+
+    /**
+     * Breadth first flood fill from one or more seeds. A block joins the result only if the
+     * predicate accepts it and it is reachable through other accepted blocks, so the fill follows
+     * the shape of a vein or a tree rather than a box.
+     *
+     * @param maxBlocks   hard ceiling on the whole call, seeds included
+     * @param directions  which neighbours to step to; null walks all 26 surrounding blocks
+     * @param skipChance  per neighbour chance to pass over a block, for a ragged edge; 0 for solid
+     */
+    public static Set<BlockPos> flood(ServerLevel level, Collection<BlockPos> seeds,
+                                      Predicate<BlockState> match, int maxBlocks,
+                                      @Nullable Direction[] directions, float skipChance) {
+        Set<BlockPos> found = new LinkedHashSet<>();
+        if (level == null || seeds == null || match == null || maxBlocks <= 0) return found;
+
+        Deque<BlockPos> frontier = new ArrayDeque<>();
+
+        for (BlockPos seed : seeds) {
+            if (found.size() >= maxBlocks) break;
+            if (seed == null) continue;
+            BlockPos start = seed.immutable();
+            if (!match.test(level.getBlockState(start))) continue;
+            if (found.add(start)) frontier.add(start);
+        }
+
+        while (!frontier.isEmpty() && found.size() < maxBlocks) {
+            BlockPos current = frontier.poll();
+
+            for (BlockPos next : neighbours(current, directions)) {
+                if (found.size() >= maxBlocks) break;
+                if (found.contains(next)) continue;
+                if (!match.test(level.getBlockState(next))) continue;
+                if (skipChance > 0.0F && tryChance(skipChance)) continue;
+
+                found.add(next);
+                frontier.add(next);
+            }
+        }
+
+        return found;
+    }
+
+    /** Single seed, axis neighbours, no skipping. */
+    public static Set<BlockPos> flood(ServerLevel level, BlockPos start, int maxBlocks,
+                                      Predicate<BlockState> match) {
+        return flood(level, List.of(start), match, maxBlocks, AXIS_NEIGHBOURS, 0.0F);
+    }
+
+    private static List<BlockPos> neighbours(BlockPos pos, @Nullable Direction[] directions) {
+        if (directions == null) {
+            List<BlockPos> all = new ArrayList<>(26);
+            for (BlockPos p : ShapeGen.cuboid(pos.offset(-1, -1, -1), 3, 3, 3)) {
+                BlockPos immutable = p.immutable();
+                if (!immutable.equals(pos)) all.add(immutable);
+            }
+            return all;
+        }
+
+        List<BlockPos> stepped = new ArrayList<>(directions.length);
+        for (Direction direction : directions) stepped.add(pos.relative(direction).immutable());
+        return stepped;
+    }
+
+
     /** True when the attack cooldown has fully recovered, matching the vanilla crit window. */
     private static boolean isFullyCharged(ServerPlayer player) {
         return player.getAttackStrengthScale(0.5F) >= FULL_CHARGE;
@@ -160,6 +245,16 @@ public class FusionAbilities {
     private static boolean isSword(ItemStack tool) {
         return tool.getItem() instanceof FusedSwordItem
             || tool.getItemName().getString().toLowerCase().contains("sword");
+    }
+
+    private static boolean isSpear(ItemStack tool) {
+        return tool.getItemName().getString().toLowerCase().contains("spear");
+    }
+
+    /** Axes, swords and spears are the only tools that carry an on hit effect. */
+    private static boolean isWeapon(ItemStack tool) {
+        if (tool == null || tool.isEmpty()) return false;
+        return isSword(tool) || isAxe(tool) || isSpear(tool);
     }
 
     private static List<BlockPos> centeredArea(BlockPos center, int radius, int height) {
@@ -228,6 +323,7 @@ public class FusionAbilities {
         public static void toolOnBreakBlock(ServerPlayer player, ItemStack tool, BlockPos pos, BlockState state) {
             if(state.getBlock().getLootTable().isEmpty()) return;
             if(!tryChance(EARTH_LOOTING_CHANCE)) return;
+            tool.isCorrectToolForDrops(state);
 
             //check if tool is appropriate for the block, if not, don't drop loot
             if(state.getDestroySpeed(player.level(), pos) <= 0) return;
@@ -236,6 +332,64 @@ public class FusionAbilities {
             ).forEach(stack -> {
                 player.level().addFreshEntity(new ItemEntity(player.level(), pos.getX(), pos.getY(), pos.getZ(), stack));
             });
+        }
+
+        private static final int MAX_PLANTED_BLOCKS = 25;
+
+        /**
+         * Flood fills the connected farmland under the block used and sows it with whatever seeds
+         * the player is carrying, nearest first, until the seeds or the farmland run out.
+         */
+        public static void toolOnUseBlock(ServerPlayer player, ItemStack tool, BlockPos pos) {
+            if (!isHoe(tool)) return;
+
+            ServerLevel level = player.level();
+            List<ItemStack> seeds = seedStacks(player);
+            if (seeds.isEmpty()) return;
+
+            // The hoe may have been used on the farmland itself or on the crop sitting above it.
+            BlockPos start = level.getBlockState(pos).is(Blocks.FARMLAND) ? pos : pos.below();
+            if (!level.getBlockState(start).is(Blocks.FARMLAND)) return;
+
+            Set<BlockPos> plots = flood(level, List.of(start), s -> s.is(Blocks.FARMLAND),
+                MAX_PLANTED_BLOCKS, HORIZONTAL_NEIGHBOURS, 0.0F);
+
+            for (BlockPos plot : plots) {
+                BlockPos above = plot.above();
+                if (!level.getBlockState(above).isAir()) continue;
+
+                ItemStack seed = nextSeed(seeds);
+                if (seed == null) return;
+
+                BlockState crop = ((BlockItem) seed.getItem()).getBlock().defaultBlockState();
+                if (!crop.canSurvive(level, above)) continue;
+
+                level.setBlockAndUpdate(above, crop);
+                if (!player.getAbilities().instabuild) seed.shrink(1);
+            }
+        }
+
+        /** Crops and stems only, so a stack of cobblestone is not treated as a seed. */
+        private static List<ItemStack> seedStacks(ServerPlayer player) {
+            Inventory inventory = player.getInventory();
+            List<ItemStack> seeds = new ArrayList<>();
+
+            for (int i = 0; i < inventory.getContainerSize(); i++) {
+                ItemStack stack = inventory.getItem(i);
+                if (stack.isEmpty()) continue;
+                if (!(stack.getItem() instanceof BlockItem blockItem)) continue;
+
+                Block block = blockItem.getBlock();
+                if (block instanceof CropBlock || block instanceof StemBlock) seeds.add(stack);
+            }
+            return seeds;
+        }
+
+        @Nullable
+        private static ItemStack nextSeed(List<ItemStack> seeds) {
+            seeds.removeIf(ItemStack::isEmpty);
+            if (seeds.isEmpty()) return null;
+            return seeds.get(RANDOM.nextInt(seeds.size()));
         }
 
     }
@@ -259,6 +413,15 @@ public class FusionAbilities {
 
         private static final Queue<Entity> CHAINED_MOBS = new ArrayDeque<>();
         private static final Map<Level, Queue<BlockPos>> CHAINED_BLOCKS = new HashMap<>();
+
+        public static final Set<EntityType<?>> IGNORE_MOBS = Set.<EntityType<?>>of(
+            EntityType.WOLF,
+            EntityType.CAT,
+            EntityType.OCELOT,
+            EntityType.DOLPHIN,
+            EntityType.SNIFFER
+        );
+
 
         private static void init() {
             shovelTillableblocks = new HashMap<>();
@@ -310,11 +473,14 @@ public class FusionAbilities {
 
         //When fully charged, lightnight strikes other players in the area
         public static void swordOnHurt(ServerPlayer player, ItemStack tool, Entity target) {
+            if (!isWeapon(tool)) return;
             if (!isFullyCharged(player)) return;
             if (!(player.level() instanceof ServerLevel level)) return;
 
             AABB area = target.getBoundingBox().inflate(CHAIN_RADIUS);
-            List<Mob> chained = level.getEntitiesOfClass(Mob.class, area, mob -> mob != target && mob.isAlive());
+            List<Mob> chained = level.getEntitiesOfClass(Mob.class, area, mob -> {
+                return mob != target && mob.isAlive() && !IGNORE_MOBS.contains(mob.getType());
+            });
             chained.sort(Comparator.comparingDouble(mob -> mob.distanceToSqr(target)));
 
             CHAINED_MOBS.addAll( chained.stream().limit(MAX_CHAIN_TARGETS).collect(Collectors.toSet()) );
@@ -328,22 +494,9 @@ public class FusionAbilities {
             if (!isVeinable(tool, state)) return;
 
             Block target = state.getBlock();
-            Set<BlockPos> mined = new HashSet<>();
-            Deque<BlockPos> frontier = new ArrayDeque<>();
-            mined.add(pos);
-            frontier.add(pos);
+            Set<BlockPos> mined = flood(level, List.of(pos), s -> s.is(target),
+                MAX_VEIN_BLOCKS, DIAGONAL_NEIGHBOURS, 0.0F);
 
-            while (!frontier.isEmpty() && mined.size() < MAX_VEIN_BLOCKS) {
-                BlockPos current = frontier.poll();
-                for (BlockPos neighbour : ShapeGen.cuboid(current.offset(-1, -1, -1), 3, 3, 3)) {
-                    if (mined.size() >= MAX_VEIN_BLOCKS) break;
-                    if (mined.contains(neighbour)) continue;
-                    if (!level.getBlockState(neighbour).is(target)) continue;
-
-                    mined.add(neighbour);
-                    frontier.add(neighbour.immutable());
-                }
-            }
             CHAINED_BLOCKS.computeIfAbsent(level, k -> new ArrayDeque<>()).addAll(mined);
         }
 
@@ -382,7 +535,7 @@ public class FusionAbilities {
             level.addFreshEntity(bolt);
         }
 
-        private static final int LIGHTNING_TICK_INTERVAL = 10;
+        private static final int LIGHTNING_TICK_INTERVAL = 7;
         private static final Queue<BlockPos> EMPTY_QUEUE = new ArrayDeque<>();
         private static int count = 0;
         public static void onTick(ServerLevel level)
@@ -461,7 +614,8 @@ public class FusionAbilities {
 
         private static final Map<ServerLevel, Set<BlockPos>> dissolvedMap = new HashMap<>();
 
-        public static void swordOnHurt(ServerPlayer player, ItemStack tool, Entity target) {
+        public static void weapOnHurt(ServerPlayer player, ItemStack tool, Entity target) {
+            if (!isWeapon(tool)) return;
             if (!(target instanceof LivingEntity living)) return;
             if (!isFullyCharged(player)) return;
 
@@ -519,32 +673,8 @@ public class FusionAbilities {
          */
         private static void contaminate(ServerLevel level, Collection<BlockPos> seeds, Predicate<BlockState> match)
         {
-            Set<BlockPos> queued = new LinkedHashSet<>();
-            Deque<BlockPos> frontier = new ArrayDeque<>();
-
-            for (BlockPos seed : seeds) {
-                if (queued.size() >= MAX_QUEUED_BLOCKS) break;
-                BlockPos start = seed.immutable();
-                if (!match.test(level.getBlockState(start))) continue;
-                if (queued.add(start)) frontier.add(start);
-            }
-
-            while (!frontier.isEmpty() && queued.size() < MAX_QUEUED_BLOCKS) {
-                BlockPos current = frontier.poll();
-
-                for (Direction direction : SPREAD_DIRECTIONS) {
-                    if (queued.size() >= MAX_QUEUED_BLOCKS) break;
-
-                    BlockPos next = current.relative(direction).immutable();
-                    if (queued.contains(next)) continue;
-                    if (!match.test(level.getBlockState(next))) continue;
-                    if (tryChance(SKIP_CHANCE)) continue;
-
-                    queued.add(next);
-                    frontier.add(next);
-                }
-            }
-
+            Set<BlockPos> queued = flood(level, seeds, match, MAX_QUEUED_BLOCKS,
+                SPREAD_DIRECTIONS, SKIP_CHANCE);
             if (queued.isEmpty()) return;
 
             dissolvedMap.computeIfAbsent(level, k -> new HashSet<>()).addAll(queued);
@@ -590,6 +720,7 @@ public class FusionAbilities {
     public static class FireCrystal {
 
         public static void swordOnHurt(ServerPlayer player, ItemStack tool, Entity target) {
+            if (!isWeapon(tool)) return;
         }
 
         public static void swordOnDeath(ServerPlayer player, ItemStack tool, LivingEntity target) {
@@ -660,8 +791,7 @@ public class FusionAbilities {
         private static final int SLOW_DURATION = 60;
         private static final int MAX_SLOW_AMPLIFIER = 2;
 
-        private static final int VINE_RADIUS = 2;
-        private static final int VINE_HEIGHT = 1;
+        private static final int MAX_VINE_SEARCH = 48;
         private static final float VINE_SKIP_CHANCE = 0.65F;
         private static final int MAX_VINES = 6;
 
@@ -673,6 +803,7 @@ public class FusionAbilities {
             Items.PUMPKIN_SEEDS, Items.TORCHFLOWER_SEEDS);
 
         public static void swordOnHurt(ServerPlayer player, ItemStack tool, Entity target) {
+            if (!isWeapon(tool)) return;
             if (!(target instanceof LivingEntity living)) return;
 
             MobEffectInstance existing = living.getEffect(MobEffects.SLOWNESS);
@@ -713,22 +844,31 @@ public class FusionAbilities {
             }
         }
 
+        /**
+         * Vines creep along the connected air pocket touching the surface rather than filling a
+         * box, so they follow the face of a wall or the underside of a canopy.
+         */
         private static void creep(ServerLevel level, BlockPos origin, Predicate<BlockState> anchor) {
-            List<BlockPos> candidates = centeredArea(origin, VINE_RADIUS, VINE_HEIGHT);
-            Collections.shuffle(candidates, RANDOM);
+            Set<BlockPos> reachable = flood(level, faces(origin), BlockState::isAir,
+                MAX_VINE_SEARCH, AXIS_NEIGHBOURS, VINE_SKIP_CHANCE);
 
             int placed = 0;
-            for (BlockPos pos : candidates) {
+            for (BlockPos pos : reachable) {
                 if (placed >= MAX_VINES) break;
-                if (tryChance(VINE_SKIP_CHANCE)) continue;
-                if (!level.getBlockState(pos).isAir()) continue;
 
                 BlockState vine = vineAgainst(level, pos, anchor);
                 if (vine == null) continue;
 
-                level.setBlockAndUpdate(pos.immutable(), vine);
+                level.setBlockAndUpdate(pos, vine);
                 placed++;
             }
+        }
+
+        /** The air blocks touching the broken block, which is where the creep starts. */
+        private static List<BlockPos> faces(BlockPos origin) {
+            List<BlockPos> seeds = new ArrayList<>();
+            for (Direction direction : AXIS_NEIGHBOURS) seeds.add(origin.relative(direction).immutable());
+            return seeds;
         }
 
         private static BlockState vineAgainst(ServerLevel level, BlockPos pos, Predicate<BlockState> anchor) {
@@ -823,6 +963,7 @@ public class FusionAbilities {
     public static class ToxicBone {
 
         public static void swordOnHurt(ServerPlayer player, ItemStack tool, Entity target) {
+            if (!isWeapon(tool)) return;
             if(target instanceof LivingEntity living) {
                 //doesnt look like there is poison resistance effect
                 DamageSource poison = new DamageSource(Holder.direct(DAMAGE_TYPES_REGISTRY.getValue(DamageTypes.MAGIC)));

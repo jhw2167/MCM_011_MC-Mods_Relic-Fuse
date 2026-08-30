@@ -10,6 +10,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Builds the display name and lore for a fused tool. Tier and tool type are parsed from the
@@ -23,6 +24,9 @@ public class FusionNaming {
     public static final String TYPE_PICK = "pick";
     public static final String TYPE_HOE = "hoe";
     public static final String TYPE_SHOVEL = "shovel";
+    public static final String TYPE_TRIDENT = "trident";
+    public static final String TYPE_SPEAR = "spear";
+    public static final String TYPE_MACE = "mace";
     public static final String TYPE_UNKNOWN = "unknown";
 
     private static final Map<String, String> SUFFIX_TO_TYPE = Map.of(
@@ -30,8 +34,15 @@ public class FusionNaming {
         "_axe", TYPE_AXE,
         "_pickaxe", TYPE_PICK,
         "_hoe", TYPE_HOE,
-        "_shovel", TYPE_SHOVEL
+        "_shovel", TYPE_SHOVEL,
+        "trident", TYPE_TRIDENT,
+        "spear", TYPE_SPEAR,
+        "mace", TYPE_MACE
     );
+
+    // Fusion effects for these weapons ship without abilities.
+    private static final Set<String> UNIMPLEMENTED_TYPES =
+        Set.of(TYPE_TRIDENT, TYPE_SPEAR, TYPE_MACE);
 
     private static final String CRYSTAL_SUFFIX = " Crystal";
 
@@ -71,9 +82,15 @@ public class FusionNaming {
      * Sourced from en_us as item.hbs_relicfuse.fusion.&lt;modifier_path&gt;.&lt;tool_type&gt;
      */
     public static Component buildLore(ItemStack modifier, ItemStack tool) {
+        String toolType = toolType(tool);
+        if (UNIMPLEMENTED_TYPES.contains(toolType)) {
+            return Component.translatable(
+                "item." + Constants.MOD_ID + ".fusion.unimplemented." + toolType);
+        }
+
         Identifier modifierId = BuiltInRegistries.ITEM.getKey(modifier.getItem());
         return Component.translatable(
-            "item." + Constants.MOD_ID + ".fusion." + modifierId.getPath() + "." + toolType(tool));
+            "item." + Constants.MOD_ID + ".fusion." + modifierId.getPath() + "." + toolType);
     }
 
     public static String toolType(ItemStack tool) {

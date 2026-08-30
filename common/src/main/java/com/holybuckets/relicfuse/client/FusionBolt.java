@@ -38,28 +38,22 @@ import static com.holybuckets.foundation.HBUtil.*;
 
 public class FusionBolt {
 
-    public static int DEFAULT_COLOR = 0x53EAF7;
-    public static int DEFAULT_LIFE_TICKS = 40;
+    public static int DEFAULT_COLOR = 0xE6E6FF;
+    public static int DEFAULT_LIFE_TICKS = 60;
 
     public static float VANILLA_HEIGHT = 128.0f;
     public static float SPREAD = 0.22f;
-    public static float RADIUS_SCALE = 1.0f;
+
+    /** Half width of the outermost pass in blocks, held constant regardless of bolt length. */
+    public static float RADIUS_SCALE = 0.25f;
     public static float BASE_ALPHA = 0.30f;
 
     public static int MAX_ACTIVE = 32;
 
     public static double CENTER_FACTOR = 0.5;
 
-    public static final Set<EntityType<?>> IGNORE_MOBS = Set.<EntityType<?>>of(
-        EntityType.WOLF,
-        EntityType.CAT,
-        EntityType.OCELOT,
-        EntityType.DOLPHIN,
-        EntityType.SNIFFER
-    );
-
     public static boolean isIgnored(Entity entity) {
-        return entity != null && IGNORE_MOBS.contains(entity.getType());
+        return entity != null;
     }
 
     private static final List<Bolt> ACTIVE = new ArrayList<>();
@@ -258,16 +252,22 @@ public class FusionBolt {
                 0.0f, 1.0f, 0.0f, (float) dir.x, (float) dir.y, (float) dir.z));
             poseStack.scale(scale, scale, scale);
 
+            final float boltScale = scale;
             collector.submitCustomGeometry(poseStack, renderType,
-                (pose, buffer) -> drawBolt(pose.pose(), buffer, bolt));
+                (pose, buffer) -> drawBolt(pose.pose(), buffer, bolt, boltScale));
 
             poseStack.popPose();
         }
     }
 
-    private static void drawBolt(Matrix4fc poseMatrix, VertexConsumer buffer, Bolt bolt) {
+    /**
+     * The pose is scaled by length/128, which would shrink the bolt's width along with it, so the
+     * radius divides that back out and stays a fixed number of blocks at any range.
+     */
+    private static void drawBolt(Matrix4fc poseMatrix, VertexConsumer buffer, Bolt bolt, float boltScale) {
 
         long seed = bolt.seed * 31L + bolt.age;
+        float radiusScale = boltScale > 1.0E-5f ? RADIUS_SCALE / boltScale : RADIUS_SCALE;
 
         float[] xOffs = new float[8];
         float[] zOffs = new float[8];
@@ -316,12 +316,12 @@ public class FusionBolt {
                         zo0 += (randomx.nextInt(31) - 15) * SPREAD;
                     }
 
-                    float rr1 = (0.1F + (float) r * 0.2F) * RADIUS_SCALE;
+                    float rr1 = (0.1F + (float) r * 0.2F) * radiusScale;
                     if (p == 0) {
                         rr1 *= (float) h * 0.1F + 1.0F;
                     }
 
-                    float rr2 = (0.1F + (float) r * 0.2F) * RADIUS_SCALE;
+                    float rr2 = (0.1F + (float) r * 0.2F) * radiusScale;
                     if (p == 0) {
                         rr2 *= ((float) h - 1.0F) * 0.1F + 1.0F;
                     }

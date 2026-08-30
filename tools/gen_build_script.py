@@ -25,6 +25,7 @@ import re
 
 # Longest suffix first so pickaxe is not swallowed by axe.
 TOOL_SUFFIXES = (
+    ("_spear_in_hand", "spear_in_hand"),
     ("_pickaxe", "pick"),
     ("_trident", "trident"),
     ("_shovel", "shovel"),
@@ -35,6 +36,10 @@ TOOL_SUFFIXES = (
     ("_axe", "axe"),
 )
 
+# 32x32 held sprites rather than 16x16 inventory icons. They keep their own item id so the merged
+# item definitions stay separate; only the overlay textures are consumed by the 3d models.
+IN_HAND_TOOL_TYPES = {"spear_in_hand"}
+
 # Vanilla items with no material tier in the name, so the whole filename is the tool type.
 UNTIERED_TOOLS = {
     "trident": "trident",
@@ -42,8 +47,25 @@ UNTIERED_TOOLS = {
 }
 UNTIERED_LABEL = "untiered"
 
-# Tool types with no vanilla counterpart; their item ids resolve into the mod namespace.
-MODDED_TOOL_TYPES = {"spear"}
+# Tool types with no vanilla counterpart. The namespace decides which assets/<ns>/items/ folder
+# the definition lands in, so it must match the namespace the item is registered under.
+# Override per run with --tool-namespace spear=somemod
+VANILLA_NAMESPACE = "minecraft"
+TOOL_NAMESPACES = {}
+
+# Spears are vanilla but render through a display_context select: a flat sprite in the gui and a
+# 3d model in hand. Both passes therefore write into one item definition, one branch each.
+DISPLAY_CONTEXTS = {
+    "spear": "gui",
+    "spear_in_hand": "hand",
+}
+# The in hand pass targets the base item, not an item named *_in_hand, which does not exist.
+ITEM_SUFFIX_STRIP = {"spear_in_hand": "_in_hand"}
+SWAP_ANIMATION_SCALE = {"spear": 1.95, "spear_in_hand": 1.95}
+
+# Overlays inherit the base model's parent so they pick up the same display transforms; without
+# this the held spear overlay renders flat while the spear itself is rotated into the hand pose.
+LAYER_PARENTS = {"spear_in_hand": "minecraft:item/spear_in_hand"}
 
 # Which reference sprite belongs to which tool type, matched as substrings of the filename.
 # Several spellings per type because the hand-authored names are inconsistent (archeologyhofe,
@@ -57,11 +79,19 @@ REFERENCE_HINTS = {
     "trident": ("trident",),
     "spear": ("spear",),
     "mace": ("mace",),
+    "spear_in_hand": ("spearhand", "spear_in_hand"),
+}
+
+# Hints that would otherwise be swallowed by a shorter type's hint.
+REFERENCE_EXCLUSIONS = {
+    "axe": ("pickax",),
+    "spear": ("spearhand", "spear_in_hand"),
 }
 
 # Reference filenames are prefixed by kind, which is what keeps boneAxe apart from archeologyaxfe.
 # Crystal art is inconsistent: the original tools are archeology*, the newer weapons are crystal*.
-KIND_REFERENCE_PREFIXES = {"crystal": ("archeology", "crystal"), "bone": ("bone",)}
+# "bonr" is a typo in bonrspearhand.png; drop the alias once the art is renamed.
+KIND_REFERENCE_PREFIXES = {"crystal": ("archeology", "crystal"), "bone": ("bone", "bonr")}
 
 FOLDER_KINDS = {
     "crystal": "crystal", "crystals": "crystal",
@@ -96,7 +126,7 @@ def normalise(name):
     return re.sub(r"_+", "_", name)
 
 
-def parse_tool(path):
+def parse_tool(path, namespaces):
     """netherite_axe.png -> (netherite, axe, minecraft:netherite_axe)
 
     trident.png carries no tier, and spears have no vanilla item, so both are special cased.
@@ -105,12 +135,16 @@ def parse_tool(path):
 
     tool_type = UNTIERED_TOOLS.get(name)
     if tool_type:
-        return UNTIERED_LABEL, tool_type, f"minecraft:{name}"
+        return UNTIERED_LABEL, tool_type, f"{VANILLA_NAMESPACE}:{name}"
 
     for suffix, tool_type in TOOL_SUFFIXES:
         if name.endswith(suffix):
-            namespace = "hbs_relicfuse" if tool_type in MODDED_TOOL_TYPES else "minecraft"
-            return name[:-len(suffix)], tool_type, f"{namespace}:{name}"
+            namespace = namespaces.get(tool_type, VANILLA_NAMESPACE)
+            item_name = name
+            strip = ITEM_SUFFIX_STRIP.get(tool_type)
+            if strip and item_name.endswith(strip):
+                item_name = item_name[:-len(strip)]
+            return name[:-len(suffix)], tool_type, f"{namespace}:{item_name}"
     return None, None, None
 
 
@@ -150,7 +184,7 @@ def find_reference(references, kind, tool_type):
             continue
         if not any(h in name for h in hints):
             continue
-        if tool_type == "axe" and "pickax" in name:
+        if any(x in name for x in REFERENCE_EXCLUSIONS.get(tool_type, ())):
             continue
         candidates.append(path)
     return candidates[0] if candidates else None
@@ -168,10 +202,28 @@ def command(kind, tier, tool_type, tool_sprite, item, mods, ids, reference, shap
         parts.append(f"--reference {sh(reference)}")
     elif kind == "bone":
         parts.append(f"--shape {sh(shape)}")
+    if item_namespace != VANILLA_NAMESPACE:
+        parts.append("--emit-base")
+
+    layer_parent = LAYER_PARENTS.get(tool_type)
+    if layer_parent:
+        parts.append(f"--layer-parent {layer_parent}")
+
+    context = DISPLAY_CONTEXTS.get(tool_type)
+    if context:
+        parts.append(f"--display-context {context}")
+        scale = SWAP_ANIMATION_SCALE.get(tool_type)
+        if scale is not None:
+            parts.append(f"--swap-animation-scale {scale}")
+
+    # The model follows the sprite, so the in hand pass keeps its own *_in_hand model even though
+    # the item id has that suffix stripped.
+    model_path = normalise(stem(tool_sprite))
+
     parts.append("--modifiers " + " ".join(sh(m) for m in mods))
     parts.append("--modifier-ids " + " ".join(ids))
     parts += [
-        f"--base-model {item_namespace}:item/{item_path}",
+        f"--base-model {item_namespace}:item/{model_path}",
         f"--item {item}",
         f"--component {args.component}",
         f"--namespace {args.namespace}",
@@ -204,9 +256,16 @@ echo "using $PYTHON ($("$PYTHON" --version 2>&1))"
 
 
 def generate(args):
+    namespaces = dict(TOOL_NAMESPACES)
+    for override in args.tool_namespace or []:
+        if "=" not in override:
+            raise SystemExit(f"--tool-namespace expects TYPE=NAMESPACE, got '{override}'")
+        tool_type, namespace = override.split("=", 1)
+        namespaces[tool_type] = namespace
+
     tools = []
     for path in sprites(args.tools):
-        tier, tool_type, item = parse_tool(path)
+        tier, tool_type, item = parse_tool(path, namespaces)
         if tier is None:
             continue
         if args.tool_types and tool_type not in args.tool_types:
@@ -298,6 +357,10 @@ def main():
     parser.add_argument("--component", default="hbs_relicfuse:fusion")
     parser.add_argument("--namespace", default="hbs_relicfuse")
     parser.add_argument("--bands", type=int, default=5)
+    parser.add_argument("--tool-namespace", nargs="+", metavar="TYPE=NAMESPACE",
+                        help="namespace for a tool type that has no vanilla item, "
+                             "e.g. spear=hbs_relicfuse. Decides which assets/<ns>/items/ "
+                             "folder the definition is written to")
     parser.add_argument("--out-dir", default="generated", help="passed through as --out")
     parser.add_argument("--out", default="build_fusions.sh")
     generate(parser.parse_args())

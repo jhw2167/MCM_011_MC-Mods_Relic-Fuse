@@ -1,0 +1,12 @@
+{
+  "structures": [
+    { "structure": "hbs_relicfuse:oasis", "weight": 1 }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spread_type": "linear",
+    "spacing": 32,
+    "separation": 10,
+    "salt": 1276487
+  }
+}

@@ -13,4 +13,10 @@ public abstract class FusableItem extends Item implements IFusableItem {
     public ItemStack asFusionIngredient(ItemStack stack) {
         return ItemStack.EMPTY;
     }
+
+    @Override
+    public int getDefaultMaxStackSize() {
+        return 1;
+    }
+
 }

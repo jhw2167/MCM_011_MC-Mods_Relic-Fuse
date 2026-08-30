@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/spear_in_hand",
+  "textures": {
+    "layer0": "hbs_relicfuse:item/overlay/spear_in_hand_tint_powder_2"
+  }
+}

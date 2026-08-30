@@ -57,6 +57,7 @@ public class FusionItemWeights {
         BRUSH_BONUS.clear();
         BRUSH_BONUS.put(Items.BRUSH, 0);
         BRUSH_BONUS.put(ModItems.ironBrush.get(), 5);
+        BRUSH_BONUS.put(ModItems.goldBrush.get(), 7); //fast but fragile
         BRUSH_BONUS.put(ModItems.diamondBrush.get(), 8);
         BRUSH_BONUS.put(ModItems.netheriteBrush.get(), 12);
 
@@ -70,6 +71,8 @@ public class FusionItemWeights {
 
     private static void loadRelicRareness() {
         RELIC_RARENESS.clear();
+
+        RELIC_RARENESS.put(ModItems.ancientTotem.get(), Rareness.UNCOMMON);
 
         RELIC_RARENESS.put(ModItems.encasedBone.get(), Rareness.RARE);
         RELIC_RARENESS.put(ModItems.overgrownBone.get(), Rareness.RARE);

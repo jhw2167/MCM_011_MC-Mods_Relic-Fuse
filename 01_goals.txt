@@ -178,17 +178,21 @@ Ancient Power tiers in 1,2,3 - you need higher tiers to fuse more advanced weapo
 To RELEASE
 ---
 
-1. Add all bones, crystals to suspicious loot tables
-2. Make loot table random chance table
-3. Add structures to mod
-4. Add ancient power totem to mod
-5. Test brush behavior 
-6. Fix fuse behavior so items spawn at correct points; and anim
-7. Clean up, refine and test all behaviors
-8. Server Test
-9. Add spears
+1. Add all bones, crystals to suspicious loot tables				XXXX
+2. Make loot table random chance table						XXX
+3. Add structures to mod							XXX
+4. Add ancient power totem to mod						XX
+5. Test brush behavior 								XX
+
+9. Add spears	- behavior lacking for these
 10. Add Mace
 11. Add Trident
+
+6. Fix fuse behavior so items spawn at correct points; and anim			- to do
+7. Clean up, refine and test all behaviors					- especially hoes
+8. Server Test									- meh
+9. Add written declarations for which fusions do and don't work!
+
 12. 
 
 

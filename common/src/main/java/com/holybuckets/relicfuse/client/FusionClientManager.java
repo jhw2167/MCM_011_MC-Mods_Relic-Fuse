@@ -11,8 +11,14 @@ import com.holybuckets.relicfuse.LoggerProject;
 import com.holybuckets.relicfuse.core.FusionManager;
 import com.holybuckets.relicfuse.effect.ModEffects;
 import com.holybuckets.relicfuse.item.ModItems;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -23,7 +29,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -44,24 +49,47 @@ public class FusionClientManager {
     public static float EXPLOSION_PITCH = 1.4f;
 
     public static final int RISE_TICKS = 20;
-    public static final int ORBIT_TICKS = 60;
-    public static final int TOTAL_TICKS = RISE_TICKS + ORBIT_TICKS;
+    public static final int ORBIT_TICKS = 40;
+    public static final int MAGNET_TICKS = 32;
+    public static final int TOTAL_TICKS = RISE_TICKS + ORBIT_TICKS + MAGNET_TICKS;
 
     public static final double START_RADIUS = 0.55;
     public static final double END_RADIUS = 0.04;
     public static final double RISE_HEIGHT = 0.35;
 
-    /** Forward offset of the palm-up hands from the eye, and their drop below eye level. */
     public static final double HAND_FORWARD = 0.85;
     public static final double HAND_LATERAL = 0.42;
-    public static final double HAND_DROP = 0.38;
+    public static final double HAND_DROP = 0.2;
     public static final double ORBIT_REVOLUTIONS = 3.5;
-    public static final double WOBBLE_AMPLITUDE = 0.22;
-    public static final double WOBBLE_FREQUENCY = 34.0;
+
+    /** Degrees of yaw added per tick, ramped from start to end across the orbit. */
+    public static double SPIN_START = 14.0;
+    public static double SPIN_END = 190.0;
+
+    /** Peak roll of the shake in degrees; SPEED values are radians per tick. */
+    public static double SHAKE_MAX_DEGREES = 40.0;
+    public static double SHAKE_SPEED = 0.55;
+    /** Pitch out of the spin plane, so the pair read as objects rather than coins. */
+    public static double TILT_MAX_DEGREES = 15.0;
+    public static double TILT_SPEED = 0.42;
+
+    /** How far apart the magnetic repulsion throws them, and how many push-pull cycles. */
+    public static double MAGNET_RADIUS = 0.42;
+    public static double MAGNET_PULSES = 2.0;
+    public static double MAGNET_REVOLUTIONS = 1.5;
+    /** Shake amount settled into during the magnet phase, once the spin has wound down. */
+    public static double MAGNET_SHAKE = 0.45;
+    /** Fraction of the magnet phase spent easing out of the spin rather than stopping dead. */
+    public static double MAGNET_EASE = 0.35;
+
+    public static float ITEM_SCALE = 0.75f;
+    public static int ANIMATION_LIGHT = 15728880;
+
+    private static final ItemStackRenderState TOOL_RENDER_STATE = new ItemStackRenderState();
+    private static final ItemStackRenderState FUSABLE_RENDER_STATE = new ItemStackRenderState();
 
     private static final int HAND_GLOW_INTERVAL = 3;
     private static final int AMBIENT_SOUND_INTERVAL = 60;
-    private static int clientEntityId = -20000;
 
     private static FusionAnimation active;
 
@@ -124,8 +152,24 @@ public class FusionClientManager {
         mc.player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
         mc.player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
 
-        if (active != null) active.discard();
         active = new FusionAnimation(mc.level, mc.player, tool, fusable, event.getMessage().content);
+    }
+
+    /**
+     * Called from LevelRendererMixin at the tail of submitEntities. The animation is drawn here
+     * rather than spawned as ItemEntities because the item renderer ignores entity rotation.
+     */
+    public static void submitAnimation(PoseStack poseStack, SubmitNodeCollector collector, Vec3 cameraPos) {
+        FusionAnimation animation = active;
+        if (animation == null || poseStack == null || collector == null || cameraPos == null) return;
+
+        try {
+            float partialTick = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
+            animation.submit(poseStack, collector, cameraPos, partialTick);
+        } catch (Exception ex) {
+            active = null;
+            LoggerProject.logError("011011", "FusionClientManager: error rendering fusion animation. " + ex);
+        }
     }
 
     private static void onClientTick(ClientTickEvent event) {
@@ -179,35 +223,56 @@ public class FusionClientManager {
     /**
      * Make the fused items do a little dance before being fused.
      */
+    /**
+     * Drawn straight into the entity pass rather than spawned as ItemEntities, because the item
+     * renderer ignores entity rotation. Positions and angles are kept per tick with a previous
+     * value so the render pass can interpolate.
+     */
     private static class FusionAnimation {
 
         private final ClientLevel level;
         private final Player player;
-        private final ItemEntity toolEntity;
-        private final ItemEntity fusableEntity;
+        private final ItemStack tool;
+        private final ItemStack fusable;
         private final Vec3 origin;
+        private final Vec3 forward;
+        private final Vec3 right;
         private final String payload;
         private int ticks;
+
+        private Vec3 toolPos;
+        private Vec3 toolPosOld;
+        private Vec3 fusablePos;
+        private Vec3 fusablePosOld;
+
+        private float spin;
+        private float spinOld;
+        private float roll;
+        private float rollOld;
+        private float tilt;
+        private float tiltOld;
 
         FusionAnimation(ClientLevel level, Player player, ItemStack tool, ItemStack fusable, String payload) {
             this.level = level;
             this.player = player;
             this.payload = payload;
-            Vec3 look = player.getLookAngle();
-            this.origin = player.getEyePosition().add(look.scale(HAND_FORWARD)).add(0.0, -HAND_DROP, 0.0);
-            this.toolEntity = spawn(tool);
-            this.fusableEntity = spawn(fusable);
-        }
+            this.tool = tool.copy();
+            this.fusable = fusable.copy();
 
-        private ItemEntity spawn(ItemStack stack) {
-            ItemEntity entity = new ItemEntity(level, origin.x, origin.y, origin.z, stack.copy());
-            entity.setId(clientEntityId--);
-            entity.setNoGravity(true);
-            entity.setNeverPickUp();
-            entity.setUnlimitedLifetime();
-            entity.setDeltaMovement(Vec3.ZERO);
-            level.addEntity(entity);
-            return entity;
+            // Flattened so pitch does not drag the ritual to the player's feet, and frozen at spawn
+            // so turning mid animation does not drag the items with you.
+            Vec3 look = player.getLookAngle();
+            this.forward = new Vec3(look.x, 0.0, look.z).normalize();
+            this.right = new Vec3(-forward.z, 0.0, forward.x).normalize();
+
+            this.origin = player.getEyePosition()
+                .add(forward.scale(HAND_FORWARD))
+                .add(0.0, -HAND_DROP, 0.0);
+
+            this.toolPos = origin;
+            this.toolPosOld = origin;
+            this.fusablePos = origin;
+            this.fusablePosOld = origin;
         }
 
         /** @return true when the animation has finished and should be released. */
@@ -221,29 +286,92 @@ public class FusionClientManager {
             double rise = Math.min(1.0, (double) ticks / RISE_TICKS);
             Vec3 centre = origin.add(0.0, RISE_HEIGHT * easeOut(rise), 0.0);
 
-            double t = Math.max(0.0, (double) (ticks - RISE_TICKS) / ORBIT_TICKS);
-            double radius = Mth.lerp(easeIn(t), START_RADIUS, END_RADIUS);
-            double angle = t * ORBIT_REVOLUTIONS * Math.PI * 2.0;
-            double wobble = Math.sin(t * WOBBLE_FREQUENCY * t) * WOBBLE_AMPLITUDE * t;
+            double orbitT = Mth.clamp((double) (ticks - RISE_TICKS) / ORBIT_TICKS, 0.0, 1.0);
+            double magnetT = Mth.clamp(
+                (double) (ticks - RISE_TICKS - ORBIT_TICKS) / MAGNET_TICKS, 0.0, 1.0);
+            boolean magnetising = magnetT > 0.0;
 
-            place(toolEntity, centre, angle, radius, wobble);
-            place(fusableEntity, centre, angle + Math.PI, radius, -wobble);
-
-            if (t > 0.0 && ticks % 2 == 0) {
-                level.addParticle(FUSION_TRAIL_PARTICLE, centre.x, centre.y, centre.z, 0.0, 0.0, 0.0);
+            double radius;
+            if (magnetising) {
+                double pulse = Math.abs(Math.sin(magnetT * Math.PI * MAGNET_PULSES));
+                radius = END_RADIUS + pulse * MAGNET_RADIUS * (1.0 - magnetT);
+            } else {
+                radius = Mth.lerp(easeIn(orbitT), START_RADIUS, END_RADIUS);
             }
+
+            // easeOut leaves the magnet phase turning at roughly the orbit's rate and lets it coast
+            // down, so the circling does not visibly stall the instant the phase flips.
+            double angle = (orbitT * ORBIT_REVOLUTIONS + easeOut(magnetT) * MAGNET_REVOLUTIONS)
+                * Math.PI * 2.0;
+
+            toolPosOld = toolPos;
+            fusablePosOld = fusablePos;
+            toolPos = place(centre, angle, radius);
+            fusablePos = place(centre, angle + Math.PI, radius);
+
+            // settle runs 0 to 1 over the first slice of the magnet phase. The spin decays across
+            // it instead of stopping dead, and the shake eases down to its resting level on the
+            // same curve so both changes land together.
+            double settle = magnetising ? easeOut(Math.min(1.0, magnetT / MAGNET_EASE)) : 0.0;
+
+            double intensity = magnetising
+                ? Mth.lerp(settle, 1.0, MAGNET_SHAKE)
+                : orbitT * orbitT;
+
+            spinOld = spin;
+            rollOld = roll;
+            tiltOld = tilt;
+
+            double spinRate = SPIN_START + (SPIN_END - SPIN_START) * (magnetising ? 1.0 : intensity);
+            spin += (float) (spinRate * (1.0 - settle));
+
+            roll = (float) (Math.sin(ticks * SHAKE_SPEED) * SHAKE_MAX_DEGREES * intensity);
+            tilt = (float) Mth.clamp(
+                Math.sin(ticks * TILT_SPEED + 1.3) * TILT_MAX_DEGREES * intensity,
+                -TILT_MAX_DEGREES, TILT_MAX_DEGREES);
+
             return false;
         }
 
-        private void place(ItemEntity entity, Vec3 centre, double angle, double radius, double wobble) {
-            double x = centre.x + Math.cos(angle) * radius;
-            double z = centre.z + Math.sin(angle) * radius;
-            double y = centre.y + wobble;
-            entity.setPos(x, y, z);
-            entity.xOld = x;
-            entity.yOld = y;
-            entity.zOld = z;
-            entity.setDeltaMovement(Vec3.ZERO);
+        /**
+         * Offsets are built from the player's own right and forward vectors rather than world X and
+         * Z, so angle 0 is always the main hand side no matter which way the player faces.
+         */
+        private Vec3 place(Vec3 centre, double angle, double radius) {
+            return centre
+                .add(right.scale(Math.cos(angle) * radius))
+                .add(forward.scale(Math.sin(angle) * radius));
+        }
+
+        void submit(PoseStack poseStack, SubmitNodeCollector collector, Vec3 cameraPos, float partialTick) {
+            float renderSpin = Mth.rotLerp(partialTick, spinOld, spin);
+            float renderRoll = Mth.lerp(partialTick, rollOld, roll);
+            float renderTilt = Mth.lerp(partialTick, tiltOld, tilt);
+
+            draw(poseStack, collector, cameraPos, TOOL_RENDER_STATE, tool,
+                toolPosOld.lerp(toolPos, partialTick), renderSpin, renderRoll, renderTilt);
+            draw(poseStack, collector, cameraPos, FUSABLE_RENDER_STATE, fusable,
+                fusablePosOld.lerp(fusablePos, partialTick), -renderSpin, -renderRoll, -renderTilt);
+        }
+
+        private void draw(PoseStack poseStack, SubmitNodeCollector collector, Vec3 cameraPos,
+                          ItemStackRenderState renderState, ItemStack stack, Vec3 pos,
+                          float itemSpin, float itemRoll, float itemTilt) {
+            if (stack.isEmpty()) return;
+
+            Minecraft.getInstance().getItemModelResolver()
+                .updateForNonLiving(renderState, stack, ItemDisplayContext.GROUND, player);
+            if (renderState.isEmpty()) return;
+
+            poseStack.pushPose();
+            poseStack.translate(pos.x - cameraPos.x, pos.y - cameraPos.y, pos.z - cameraPos.z);
+            poseStack.mulPose(Axis.YP.rotationDegrees(itemSpin));
+            poseStack.mulPose(Axis.XP.rotationDegrees(itemTilt));
+            poseStack.mulPose(Axis.ZP.rotationDegrees(itemRoll));
+            poseStack.scale(ITEM_SCALE, ITEM_SCALE, ITEM_SCALE);
+
+            renderState.submit(poseStack, collector, ANIMATION_LIGHT, OverlayTexture.NO_OVERLAY, 0);
+            poseStack.popPose();
         }
 
         private void detonate() {
@@ -251,13 +379,7 @@ public class FusionClientManager {
             level.addParticle(EXPLOSION_PARTICLE, centre.x, centre.y, centre.z, 0.0, 0.0, 0.0);
             level.playLocalSound(centre.x, centre.y, centre.z, ON_FUSE_SOUND, SoundSource.PLAYERS,
                 EXPLOSION_VOLUME, EXPLOSION_PITCH, false);
-            discard();
             SimpleStringMessage.createAndFire(player, FusionManager.FUSE_COMPLETE, payload);
-        }
-
-        void discard() {
-            toolEntity.discard();
-            fusableEntity.discard();
         }
     }
 

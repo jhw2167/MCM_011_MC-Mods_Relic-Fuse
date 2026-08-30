@@ -31,6 +31,7 @@ public class ModItems {
     private static final List<DeferredObject<Item>> ITEMS = new ArrayList<>();
 
     public static DeferredItem ironBrushItem;
+    public static DeferredItem goldBrushItem;
     public static DeferredItem diamondBrushItem;
     public static DeferredItem netheriteBrushItem;
     public static DeferredItem blazeForgedBrushItem;
@@ -62,6 +63,7 @@ public class ModItems {
     public static DeferredItem ancientTotemItem;
 
     public static DeferredObject<Item> ironBrush;
+    public static DeferredObject<Item> goldBrush;
     public static DeferredObject<Item> diamondBrush;
     public static DeferredObject<Item> netheriteBrush;
     public static DeferredObject<Item> blazeForgedBrush;
@@ -97,6 +99,9 @@ public class ModItems {
 
         ironBrushItem = items.register("iron_brush", BrushItem::new, props -> props.durability(64)).asDeferredItem();
         ironBrush = track(ironBrushItem);
+
+        goldBrushItem = items.register("gold_brush", BrushItem::new, props -> props.durability(48)).asDeferredItem();
+        goldBrush = track(goldBrushItem);
 
         diamondBrushItem = items.register("diamond_brush", BrushItem::new, props -> props.durability(128)).asDeferredItem();
         diamondBrush = track(diamondBrushItem);

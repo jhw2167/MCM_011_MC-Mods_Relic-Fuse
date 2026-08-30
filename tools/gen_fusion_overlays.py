@@ -278,10 +278,19 @@ def build_powder(base, bands):
 
 # ---------------------------------------------------------------- json emission
 
-def layer_model(namespace, name):
+def layer_model(namespace, name, parent="minecraft:item/generated"):
+    """The parent carries the display transforms. An overlay drawn over a held model must inherit
+    the same parent or it renders flat while the base is rotated into the hand pose."""
+    return {
+        "parent": parent,
+        "textures": {"layer0": f"{namespace}:item/overlay/{name}"},
+    }
+
+
+def base_model(texture):
     return {
         "parent": "minecraft:item/generated",
-        "textures": {"layer0": f"{namespace}:item/overlay/{name}"},
+        "textures": {"layer0": texture},
     }
 
 
@@ -320,16 +329,84 @@ def write_json(path, doc):
 
 def merge_cases(path, doc):
     """Fold new cases into an existing definition so several kinds can share one tool file."""
-    if not os.path.exists(path):
+    existing = read_json(path)
+    if existing is None:
         return doc
-
-    with open(path, encoding="utf-8") as handle:
-        existing = json.load(handle)
 
     kept = [c for c in existing.get("model", {}).get("cases", [])
             if c.get("when") not in {n["when"] for n in doc["model"]["cases"]}]
     doc["model"]["cases"] = kept + doc["model"]["cases"]
     return doc
+
+
+def read_json(path):
+    if not os.path.exists(path):
+        return None
+    with open(path, encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+# Vanilla spears select a flat sprite for these contexts and the 3d held model for everything else.
+GUI_CONTEXTS = ["gui", "ground", "fixed", "on_shelf"]
+
+
+def component_selects(model):
+    """Every component select in a definition, whether or not it is display_context wrapped."""
+    if not isinstance(model, dict):
+        return []
+    if model.get("property") == "minecraft:component":
+        return [model]
+    if model.get("property") != "minecraft:display_context":
+        return []
+    found = [case.get("model") for case in model.get("cases") or []]
+    found.append(model.get("fallback"))
+    return [m for m in found if isinstance(m, dict)
+            and m.get("property") == "minecraft:component"]
+
+
+def display_select(gui_model, hand_model):
+    return {
+        "type": "minecraft:select",
+        "property": "minecraft:display_context",
+        "cases": [{"when": list(GUI_CONTEXTS), "model": gui_model}],
+        "fallback": hand_model,
+    }
+
+
+def display_branch(document, context):
+    """The component select already stored for one display branch, or None."""
+    if not document:
+        return None
+    model = document.get("model")
+    if not isinstance(model, dict):
+        return None
+    if model.get("property") != "minecraft:display_context":
+        return model if context == "gui" else None
+    if context == "hand":
+        return model.get("fallback")
+    cases = model.get("cases") or []
+    return cases[0].get("model") if cases else None
+
+
+def merge_display_cases(path, model, context):
+    """Merge into one branch of a display_context select, leaving the other branch alone."""
+    existing = read_json(path)
+    previous = display_branch(existing, context)
+
+    if previous and previous.get("property") == "minecraft:component":
+        new_whens = {c["when"] for c in model["cases"]}
+        kept = [c for c in previous.get("cases", []) if c.get("when") not in new_whens]
+        model["cases"] = kept + model["cases"]
+
+    other = "hand" if context == "gui" else "gui"
+    sibling = display_branch(existing, other)
+
+    gui_model = model if context == "gui" else sibling
+    hand_model = model if context == "hand" else sibling
+
+    document = dict(existing) if existing else {}
+    document["model"] = display_select(gui_model, hand_model)
+    return document
 
 
 def modifier_id(namespace, sprite_path):
@@ -365,16 +442,33 @@ def generate(args):
     model_dir = os.path.join(args.out, "assets", namespace, "models", "item", "overlay")
     os.makedirs(tex_dir, exist_ok=True)
 
+    # Vanilla tools already ship a base model; a modded one does not, and the composite silently
+    # renders as the bare item when its first layer is missing.
+    if args.emit_base:
+        base_ns, base_path = args.base_model.split(":", 1)
+        if base_path.startswith("item/"):
+            base_path = base_path[len("item/"):]
+        base_model_dir = os.path.join(args.out, "assets", base_ns, "models", "item")
+        base_tex_dir = os.path.join(args.out, "assets", base_ns, "textures", "item")
+        os.makedirs(base_model_dir, exist_ok=True)
+        os.makedirs(base_tex_dir, exist_ok=True)
+        write_json(os.path.join(base_model_dir, f"{base_path}.json"),
+                   base_model(f"{base_ns}:item/{base_path}"))
+        base.save(os.path.join(base_tex_dir, f"{base_path}.png"))
+        print(f"  base model  {base_ns}:item/{base_path}")
+
     struct_name = f"{args.tool}_struct_{args.kind}"
     struct.save(os.path.join(tex_dir, f"{struct_name}.png"))
-    write_json(os.path.join(model_dir, f"{struct_name}.json"), layer_model(namespace, struct_name))
+    write_json(os.path.join(model_dir, f"{struct_name}.json"),
+               layer_model(namespace, struct_name, args.layer_parent))
 
     band_names = []
     for index, layer in enumerate(layers):
         name = f"{args.tool}_tint_{args.kind}_{index}"
         band_names.append(name)
         layer.save(os.path.join(tex_dir, f"{name}.png"))
-        write_json(os.path.join(model_dir, f"{name}.json"), layer_model(namespace, name))
+        write_json(os.path.join(model_dir, f"{name}.json"),
+                   layer_model(namespace, name, args.layer_parent))
 
     if args.modifier_ids and len(args.modifier_ids) != len(args.modifiers):
         raise SystemExit("--modifier-ids must have one entry per --modifiers sprite")
@@ -393,14 +487,20 @@ def generate(args):
     item_ns, item_path = args.item.split(":", 1)
     definition_path = os.path.join(args.out, "assets", item_ns, "items", f"{item_path}.json")
     document = item_definition(namespace, args.component, args.base_model, cases)
-    if args.merge:
+
+    if args.display_context:
+        document = merge_display_cases(definition_path, document["model"], args.display_context)
+        if args.swap_animation_scale is not None:
+            document["swap_animation_scale"] = args.swap_animation_scale
+    elif args.merge:
         document = merge_cases(definition_path, document)
 
     # Minecraft rejects the entire definition on a repeated case, taking the unfused model with it.
-    whens = [c["when"] for c in document["model"]["cases"]]
-    repeated = sorted({w for w in whens if whens.count(w) > 1})
-    if repeated:
-        raise SystemExit(f"duplicate case conditions in {definition_path}: {', '.join(repeated)}")
+    for branch in component_selects(document["model"]):
+        whens = [c["when"] for c in branch.get("cases", [])]
+        repeated = sorted({w for w in whens if whens.count(w) > 1})
+        if repeated:
+            raise SystemExit(f"duplicate case conditions in {definition_path}: {', '.join(repeated)}")
 
     write_json(definition_path, document)
 
@@ -433,6 +533,17 @@ def main():
     parser.add_argument("--component", default="hbs_relicfuse:fusion")
     parser.add_argument("--namespace", default="hbs_relicfuse")
     parser.add_argument("--bands", type=int, default=5)
+    parser.add_argument("--layer-parent", default="minecraft:item/generated",
+                        help="parent for the overlay layer models; must match the base model's "
+                             "parent so the overlays inherit the same display transforms")
+    parser.add_argument("--display-context", choices=("gui", "hand"),
+                        help="write into one branch of a display_context select instead of "
+                             "replacing the definition; spears need gui and hand")
+    parser.add_argument("--swap-animation-scale", type=float,
+                        help="preserved on the item definition, e.g. 1.95 for spears")
+    parser.add_argument("--emit-base", action="store_true",
+                        help="also write the base model and sprite; required for modded tools "
+                             "whose base model has no vanilla counterpart")
     parser.add_argument("--out", default="tools/generated",
                         help="output root; mirrors the resources tree")
     generate(parser.parse_args())
