@@ -10,6 +10,7 @@ import com.holybuckets.foundation.event.balm.LivingDeathEvent;
 import com.holybuckets.foundation.event.balm.LivingFallEvent;
 import com.holybuckets.foundation.event.balm.LivingHealEvent;
 import com.holybuckets.foundation.event.balm.PlayerAttackEvent;
+import com.holybuckets.foundation.event.balm.PlayerLogoutEvent;
 import com.holybuckets.foundation.event.balm.PlayerRespawnEvent;
 import com.holybuckets.foundation.event.balm.TossItemEvent;
 import com.holybuckets.foundation.event.balm.UseBlockEvent;
@@ -30,13 +31,18 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -136,15 +142,11 @@ public class ManagedPlayerFusions implements IManagedPlayer {
 
     //** SOULBOUND **//
 
-    /** Held between death and respawn; dumped on logout so nothing is lost to a disconnect. */
+
     private final List<ItemStack> soulbound = new ArrayList<>();
     private Vec3 lastKnownPos = Vec3.ZERO;
     private ServerLevel lastKnownLevel;
 
-    /**
-     * Pulls every ender bone fused item out of the inventory before vanilla drops it, so the stacks
-     * are never on the ground and cannot be duplicated regardless of the keep inventory rule.
-     */
     private void stashSoulbound() {
         if (!(this.player instanceof ServerPlayer serverPlayer)) return;
 
@@ -210,6 +212,7 @@ public class ManagedPlayerFusions implements IManagedPlayer {
         registrar.registerOnPlayerFall(ManagedPlayerFusions::onPlayerFall);
         registrar.registerOnPlayerHeal(ManagedPlayerFusions::onPlayerHeal);
         registrar.registerOnPlayerRespawn(ManagedPlayerFusions::onPlayerRespawn);
+        registrar.registerOnPlayerLogout(ManagedPlayerFusions::onPlayerLogout);
 
         registrar.registerOnBreakBlock(ManagedPlayerFusions::onBreakBlock);
         registrar.registerOnDigSpeedEvent(ManagedPlayerFusions::onDigSpeed);
@@ -299,8 +302,26 @@ public class ManagedPlayerFusions implements IManagedPlayer {
     }
 
 
+    /**
+     * The respawned ServerPlayer is a new object, but PLAYER_FUSIONS is keyed by player id so the
+     * old instance and its held stacks are still reachable from either one.
+     */
     private static void onPlayerRespawn(PlayerRespawnEvent event) {
-        FusionAbilities.EnderBone.restoreOnRespawn(event.getNewPlayer());
+        ServerPlayer respawned = event.getNewPlayer();
+        if (respawned == null) return;
+
+        ManagedPlayerFusions fusions = getManagedFusions(event.getOldPlayer());
+        if (fusions == null) fusions = getManagedFusions(respawned);
+        if (fusions == null) return;
+
+        fusions.restoreSoulbound(respawned);
+        fusions.rememberLocation(respawned);
+    }
+
+    private static void onPlayerLogout(PlayerLogoutEvent event) {
+        ManagedPlayerFusions fusions = getManagedFusions(event.getPlayer());
+        if (fusions == null) return;
+        fusions.dumpSoulbound();
     }
 
 
@@ -317,7 +338,9 @@ public class ManagedPlayerFusions implements IManagedPlayer {
         Hooks h = hooks(event.getPlayer());
         if (h == null) return;
         ServerPlayer sp = server(event.getPlayer());
-        h.toolOnMineBlock.run(sp, tool(sp), event.getState());
+        BlockPos pos = MINING_POS_CACHE.getOrDefault(sp, BlockPos.ZERO);
+        if(pos.equals(BlockPos.ZERO)) return;
+        h.toolOnMineBlock.run(sp, tool(sp), pos);
     }
 
     private static void onUseBlock(UseBlockEvent event) {
@@ -329,11 +352,12 @@ public class ManagedPlayerFusions implements IManagedPlayer {
 
 
     /* INTERACTION */
-
+    private static Map<Player, BlockPos> MINING_POS_CACHE = new ConcurrentHashMap<>();
     private static void onLeftClick(PlayerInteractEvent.LeftClickInteraction event) {
         Hooks h = hooks(event.getPlayer());
         if (h == null) return;
         ServerPlayer sp = server(event.getPlayer());
+        MINING_POS_CACHE.put(sp, (event.getPos()==null ? BlockPos.ZERO : event.getPos()));
         h.onSwing.run(sp, tool(sp));
     }
 
@@ -410,7 +434,7 @@ public class ManagedPlayerFusions implements IManagedPlayer {
     @FunctionalInterface public interface DeathHook { void run(ServerPlayer p, ItemStack tool, DamageSource src, LivingEntity target); }
     @FunctionalInterface public interface PlainHook { void run(ServerPlayer p, ItemStack tool); }
     @FunctionalInterface public interface PosHook { void run(ServerPlayer p, ItemStack tool, BlockPos pos); }
-    @FunctionalInterface public interface StateHook { void run(ServerPlayer p, ItemStack tool, BlockState state); }
+    @FunctionalInterface public interface StateHook { void run(ServerPlayer p, ItemStack tool, BlockPos pos); }
     @FunctionalInterface public interface BreakHook { void run(ServerPlayer p, ItemStack tool, BlockPos pos, BlockState state); }
     @FunctionalInterface public interface DamageHook { void run(ServerPlayer p, ItemStack tool, DamageSource src, float amount); }
     @FunctionalInterface public interface AmountHook { void run(ServerPlayer p, ItemStack tool, float amount); }
@@ -497,7 +521,8 @@ public class ManagedPlayerFusions implements IManagedPlayer {
 
         route(ModItems.toxicBone, Hooks.of()
             .swordOnHurt(FusionAbilities.ToxicBone::swordOnHurt)
-            .onSwing(FusionAbilities.ToxicBone::onSwing));
+            .onSwing(FusionAbilities.ToxicBone::onSwing)
+            .toolOnMineBlock(FusionAbilities.ToxicBone::toolOnMineBlock));
 
         route(ModItems.enderBone, Hooks.of());
 

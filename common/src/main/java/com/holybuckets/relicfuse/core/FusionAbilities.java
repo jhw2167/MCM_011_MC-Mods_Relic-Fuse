@@ -26,12 +26,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.CropBlock;
-import net.minecraft.world.level.block.StemBlock;
-import net.minecraft.world.level.block.DropExperienceBlock;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.storage.loot.LootTable;
 
 import com.holybuckets.foundation.AAA.ShapeGen;
@@ -45,7 +44,6 @@ import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 import com.holybuckets.relicfuse.item.tool.FusedAxeItem;
 import com.holybuckets.foundation.HBUtil;
@@ -60,7 +58,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.BoneMealItem;
 import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.VineBlock;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -135,6 +132,22 @@ public class FusionAbilities {
         result.add(center);
         return new ArrayList<>(result);
     }
+
+    /**
+     * The block loot context set requires ORIGIN, TOOL and BLOCK_STATE, and getDrops throws
+     * NoSuchElementException without them. THIS_ENTITY is optional but is what lets loot conditions
+     * see who was holding the tool.
+     */
+    public static LootParams.Builder getBaseContext(ServerPlayer player, BlockPos pos, BlockState state) {
+        return new LootParams.Builder(player.level())
+            .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos))
+            .withParameter(LootContextParams.TOOL, player.getMainHandItem())
+            .withParameter(LootContextParams.BLOCK_STATE, state)
+            .withOptionalParameter(LootContextParams.THIS_ENTITY, player)
+            .withOptionalParameter(LootContextParams.BLOCK_ENTITY, player.level().getBlockEntity(pos))
+            .withLuck(player.getLuck());
+    }
+
 
     /* FLOOD FILL */
 
@@ -323,23 +336,19 @@ public class FusionAbilities {
         public static void toolOnBreakBlock(ServerPlayer player, ItemStack tool, BlockPos pos, BlockState state) {
             if(state.getBlock().getLootTable().isEmpty()) return;
             if(!tryChance(EARTH_LOOTING_CHANCE)) return;
-            tool.isCorrectToolForDrops(state);
+            if( !tool.isCorrectToolForDrops(state) ) return;
 
             //check if tool is appropriate for the block, if not, don't drop loot
             if(state.getDestroySpeed(player.level(), pos) <= 0) return;
-            LootTable table = LOOT_TABLES_REGISTRY.getLootTable( state.getBlock().getLootTable().get() );
-            state.getDrops(new LootParams.Builder(player.level()).withLuck(player.getLuck())
-            ).forEach(stack -> {
-                player.level().addFreshEntity(new ItemEntity(player.level(), pos.getX(), pos.getY(), pos.getZ(), stack));
+            state.getDrops(getBaseContext(player, pos, state)).forEach(stack -> {
+                player.level().addFreshEntity(new ItemEntity(player.level(),
+                    pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack));
             });
         }
 
         private static final int MAX_PLANTED_BLOCKS = 25;
 
-        /**
-         * Flood fills the connected farmland under the block used and sows it with whatever seeds
-         * the player is carrying, nearest first, until the seeds or the farmland run out.
-         */
+
         public static void toolOnUseBlock(ServerPlayer player, ItemStack tool, BlockPos pos) {
             if (!isHoe(tool)) return;
 
@@ -411,7 +420,7 @@ public class FusionAbilities {
         private static final List<Block> STONE_RESULTS = List.of(
             Blocks.BASALT, Blocks.TUFF, Blocks.DIORITE, Blocks.ANDESITE, Blocks.GRANITE);
 
-        private static final Queue<Entity> CHAINED_MOBS = new ArrayDeque<>();
+        private static final Map<Level, Queue<Entity>> CHAINED_MOBS = new HashMap<>();
         private static final Map<Level, Queue<BlockPos>> CHAINED_BLOCKS = new HashMap<>();
 
         public static final Set<EntityType<?>> IGNORE_MOBS = Set.<EntityType<?>>of(
@@ -472,21 +481,47 @@ public class FusionAbilities {
         }
 
         //When fully charged, lightnight strikes other players in the area
-        public static void swordOnHurt(ServerPlayer player, ItemStack tool, Entity target) {
-            if (!isWeapon(tool)) return;
+        public static void swordOnHurt(ServerPlayer player, ItemStack tool, Entity target)
+        {
+            if(isHoe(tool)) {
+                hoeOnHurt(player, tool, target);
+                return;
+            }
+
             if (!isFullyCharged(player)) return;
             if (!(player.level() instanceof ServerLevel level)) return;
 
             AABB area = target.getBoundingBox().inflate(CHAIN_RADIUS);
             List<Mob> chained = level.getEntitiesOfClass(Mob.class, area, mob -> {
-                return mob != target && mob.isAlive() && !IGNORE_MOBS.contains(mob.getType());
+                return mob.isAlive() && !IGNORE_MOBS.contains(mob.getType());
             });
             chained.sort(Comparator.comparingDouble(mob -> mob.distanceToSqr(target)));
 
-            CHAINED_MOBS.addAll( chained.stream().limit(MAX_CHAIN_TARGETS).collect(Collectors.toSet()) );
+            CHAINED_MOBS.computeIfAbsent(level, k -> new ArrayDeque<>()).
+             addAll( chained.stream().limit(MAX_CHAIN_TARGETS).collect(Collectors.toSet()) );
         }
 
 
+        //when a player attacks with a hoe, call a generic lightning strike on the entity and deal 10 damage
+        private static void hoeOnHurt(ServerPlayer player, ItemStack tool, Entity target)
+        {
+            //check if the block under  the entity is tilled and has a crop on it
+            BlockPos topBlock = target.blockPosition();
+            BlockPos belowBlock = topBlock.below();
+
+            //check if these contain any growable item
+            BlockState belowState = player.level().getBlockState(belowBlock);
+            BlockState topState = player.level().getBlockState(topBlock);
+            if(isCrop(belowState) || isCrop(topState)) return;
+
+            strike(player.level(), target, target.blockPosition());
+        }
+
+            private static boolean isCrop(BlockState state) {
+                return state.getBlock() instanceof CropBlock
+                || state.getBlock() instanceof StemBlock
+                || state.getBlock() instanceof AttachedStemBlock;
+            }
 
         public static void toolOnBreakBlock(ServerPlayer player, ItemStack tool, BlockPos pos, BlockState state)
         {
@@ -533,20 +568,22 @@ public class FusionAbilities {
             bolt.setPos(to.getX() + 0.5, to.getY(), to.getZ() + 0.5);
             bolt.setVisualOnly(true);
             level.addFreshEntity(bolt);
+            from.hurtServer(level, level.damageSources().lightningBolt(), 10f);
         }
 
-        private static final int LIGHTNING_TICK_INTERVAL = 7;
+        private static final int LIGHTNING_TICK_INTERVAL = 6;
         private static final Queue<BlockPos> EMPTY_QUEUE = new ArrayDeque<>();
+        private static final Queue<Entity> EMPTY_ENTITY_QUEUE = new ArrayDeque<>();
         private static int count = 0;
         public static void onTick(ServerLevel level)
         {
             if(count++<LIGHTNING_TICK_INTERVAL) return;
             count = 0;
             //iterate chained mobs and strike
-            if( !CHAINED_MOBS.isEmpty())
+            if( !CHAINED_MOBS.getOrDefault(level, EMPTY_ENTITY_QUEUE).isEmpty())
             {
-                Entity popped = CHAINED_MOBS.poll();
-                Entity peeked = CHAINED_MOBS.peek();
+                Entity popped = CHAINED_MOBS.get(level).poll();
+                Entity peeked = CHAINED_MOBS.get(level).peek();
                 if(popped==null || peeked==null) return;
 
                 //if distance exceeds CHAIN_RADIUS, return
@@ -795,7 +832,7 @@ public class FusionAbilities {
         private static final float VINE_SKIP_CHANCE = 0.65F;
         private static final int MAX_VINES = 6;
 
-        private static final int GROW_RADIUS = 1;
+        private static final int GROW_RADIUS = 2;
         private static final float SEED_CHANCE = 0.20F;
 
         private static final List<Item> SEEDS = List.of(
@@ -986,43 +1023,55 @@ public class FusionAbilities {
             }
         }
 
+        //for a hoe, it needs to clear all grass, vines, tall grass and flowers in a 5x5 area
+        public static void toolOnUseBlock(ServerPlayer player, ItemStack tool, BlockPos pos)
+        {
+            if(!isHoe(tool)) return;
+            ServerLevel level = player.level();
+            for(BlockPos target : centeredArea(pos, 3, 1)) {
+                BlockState state = level.getBlockState(target);
+                if(state.is(BlockTags.GRASS_BLOCKS))
+                    level.setBlock(target, Blocks.DIRT.defaultBlockState(), 3);
+                if( isPlantLife(state) )
+                    level.destroyBlock(target, true, player);
+            }
+        }
+
+
     }
 
     //Adds soulbound to all weapons
+    /**
+     * Soulbinding lives on ManagedPlayerFusions instead, so the held stacks belong to the player's
+     * own instance and can be dumped if they log out before respawning.
+     */
     public static class EnderBone {
 
-        private static final Map<String, List<ItemStack>> SOULBOUND = new HashMap<>();
+    }
 
-        /**
-         * Pulled out of the inventory before vanilla drops it, so the stacks are never on the ground
-         * and cannot be duplicated regardless of the keep-inventory rule.
-         */
-        public static void stashOnDeath(ServerPlayer player) {
-            Item enderBone = ModItems.enderBone == null ? null : ModItems.enderBone.get();
-            if (enderBone == null) return;
 
-            Inventory inventory = player.getInventory();
-            List<ItemStack> kept = new ArrayList<>();
+    private static boolean isPlantLife(BlockState state)
+    {
+        if (state.isAir()) return false;
 
-            for (int i = 0; i < inventory.getContainerSize(); i++) {
-                ItemStack stack = inventory.getItem(i);
-                if (stack.isEmpty()) continue;
-                if (!enderBone.equals(FusionManager.getFusedItem(stack))) continue;
+        Block block = state.getBlock();
 
-                kept.add(stack.copy());
-                inventory.setItem(i, ItemStack.EMPTY);
-            }
+        if (block instanceof VegetationBlock) return true;
+        if (block instanceof VineBlock) return true;
+        if (block instanceof GrowingPlantBlock) return true;      // cave vines, kelp, twisting/weeping
+        if (block instanceof MultifaceBlock) return true;         // glow lichen, sculk vein, resin
+        if (block instanceof SugarCaneBlock) return true;
+        if (block instanceof CactusBlock) return true;
+        if (block instanceof MossyCarpetBlock) return true;
+        if (block instanceof HangingRootsBlock) return true;
+        if (block instanceof SporeBlossomBlock) return true;
+        if (block instanceof ChorusPlantBlock || block instanceof ChorusFlowerBlock) return true;
 
-            if (kept.isEmpty()) return;
-            SOULBOUND.put(HBUtil.PlayerUtil.getId(player), kept);
-        }
-
-        public static void restoreOnRespawn(ServerPlayer player) {
-            List<ItemStack> kept = SOULBOUND.remove(HBUtil.PlayerUtil.getId(player));
-            if (kept == null) return;
-            kept.forEach(stack -> player.getInventory().placeItemBackInInventory(stack));
-        }
-
+        // Tag fallback picks up leaves and any modded plant that tags itself correctly.
+        return state.is(BlockTags.LEAVES)
+            || state.is(BlockTags.FLOWERS)
+            || state.is(BlockTags.SAPLINGS)
+            || state.is(BlockTags.CROPS);
     }
 
 }

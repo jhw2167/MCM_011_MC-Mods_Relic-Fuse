@@ -62,24 +62,21 @@ public class FusionClientManager {
     public static final double HAND_DROP = 0.2;
     public static final double ORBIT_REVOLUTIONS = 3.5;
 
-    /** Degrees of yaw added per tick, ramped from start to end across the orbit. */
     public static double SPIN_START = 14.0;
     public static double SPIN_END = 190.0;
 
-    /** Peak roll of the shake in degrees; SPEED values are radians per tick. */
     public static double SHAKE_MAX_DEGREES = 40.0;
     public static double SHAKE_SPEED = 0.55;
-    /** Pitch out of the spin plane, so the pair read as objects rather than coins. */
+
     public static double TILT_MAX_DEGREES = 15.0;
     public static double TILT_SPEED = 0.42;
 
-    /** How far apart the magnetic repulsion throws them, and how many push-pull cycles. */
     public static double MAGNET_RADIUS = 0.42;
-    public static double MAGNET_PULSES = 2.0;
+    public static double MAGNET_PULSES = 1.0;
     public static double MAGNET_REVOLUTIONS = 1.5;
-    /** Shake amount settled into during the magnet phase, once the spin has wound down. */
+
     public static double MAGNET_SHAKE = 0.45;
-    /** Fraction of the magnet phase spent easing out of the spin rather than stopping dead. */
+
     public static double MAGNET_EASE = 0.35;
 
     public static float ITEM_SCALE = 0.75f;
@@ -109,10 +106,7 @@ public class FusionClientManager {
     public static float TOTEM_VOLUME = 1.0f;
     public static float TOTEM_PITCH = 1.0f;
 
-    /**
-     * Mirrors the vanilla totem sequence: the item flash is driven client side so the ancient totem
-     * texture is shown rather than the vanilla totem hardcoded by the entity event.
-     */
+
     private static void onTotemUsed(SimpleMessageEvent event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
@@ -155,10 +149,7 @@ public class FusionClientManager {
         active = new FusionAnimation(mc.level, mc.player, tool, fusable, event.getMessage().content);
     }
 
-    /**
-     * Called from LevelRendererMixin at the tail of submitEntities. The animation is drawn here
-     * rather than spawned as ItemEntities because the item renderer ignores entity rotation.
-     */
+
     public static void submitAnimation(PoseStack poseStack, SubmitNodeCollector collector, Vec3 cameraPos) {
         FusionAnimation animation = active;
         if (animation == null || poseStack == null || collector == null || cameraPos == null) return;
