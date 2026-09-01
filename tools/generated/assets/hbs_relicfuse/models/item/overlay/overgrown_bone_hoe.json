@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "hbs_relicfuse:item/overlay/overgrown_bone_hoe"
+  }
+}
