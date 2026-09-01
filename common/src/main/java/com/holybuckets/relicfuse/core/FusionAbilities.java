@@ -3,6 +3,7 @@ package com.holybuckets.relicfuse.core;
 import com.google.gson.JsonObject;
 import com.holybuckets.foundation.GeneralConfig;
 import com.holybuckets.foundation.event.EventRegistrar;
+import com.holybuckets.foundation.event.balm.DigSpeedEvent;
 import com.holybuckets.foundation.event.balm.server.ServerStartingEvent;
 import com.holybuckets.foundation.networking.SimpleStringMessage;
 import com.holybuckets.relicfuse.effect.ToxicEffect;
@@ -31,7 +32,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.level.storage.loot.LootTable;
 
 import com.holybuckets.foundation.AAA.ShapeGen;
 import net.minecraft.core.particles.ParticleTypes;
@@ -47,7 +47,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.phys.AABB;
 import com.holybuckets.relicfuse.item.tool.FusedAxeItem;
 import com.holybuckets.foundation.HBUtil;
-import com.holybuckets.relicfuse.item.ModItems;
 import com.holybuckets.relicfuse.item.tool.FusedHoeItem;
 import com.holybuckets.relicfuse.item.tool.FusedPickaxeItem;
 import com.holybuckets.relicfuse.item.tool.FusedSwordItem;
@@ -58,6 +57,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.BoneMealItem;
 import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.Items;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -96,6 +96,8 @@ public class FusionAbilities {
     private static GeneralConfig CONFIG;
     private static Random RANDOM;
 
+    private static  Map<Block, List<Block>> shovelTillableblocks;
+
     public static void init(EventRegistrar registrar) {
         registrar.registerOnBeforeServerStarted(FusionAbilities::onBeforeServerStarted);
     }
@@ -114,6 +116,7 @@ public class FusionAbilities {
 
         DemonicCrystal.init();
         ElectricCrystal.init();
+        OvergrownBone.init();
     }
 
     private static boolean tryChance(float chance) {
@@ -121,13 +124,12 @@ public class FusionAbilities {
     }
 
     //Use shapegen to return a random list of blocks in the area
-    private static List<BlockPos> getRandomBlocksInArea(BlockPos center, int width, int height, int depth, float ignoreChance) {
-        List<BlockPos> blocks = ShapeGen.cuboid(center, width, height, depth);
-        Collections.shuffle(blocks, RANDOM);
+    private static List<BlockPos> getRandomBlocksInArea(BlockPos center, int width, int height, int length, float ignoreChance) {
+        HBUtil.Fast3DArray poses = HBUtil.ShapeUtil.getCube( width, length, height);
         Set<BlockPos> result = new HashSet<>();
-        for (BlockPos pos : blocks) {
+        for (HBUtil.TripleInt trip : poses.toArray()) {
             if (tryChance(ignoreChance)) continue;
-            result.add(pos);
+            result.add(new BlockPos(trip.x, trip.y, trip.z));
         }
         result.add(center);
         return new ArrayList<>(result);
@@ -252,16 +254,16 @@ public class FusionAbilities {
 
     private static boolean isPickaxe(ItemStack tool) {
         return tool.getItem() instanceof FusedPickaxeItem
-            || tool.getItemName().getString().toLowerCase().contains("pickaxe");
+            || tool.getItem().getDescriptionId().toLowerCase().contains("pickaxe");
     }
 
     private static boolean isSword(ItemStack tool) {
         return tool.getItem() instanceof FusedSwordItem
-            || tool.getItemName().getString().toLowerCase().contains("sword");
+            || tool.getItem().getDescriptionId().toLowerCase().contains("sword");
     }
 
     private static boolean isSpear(ItemStack tool) {
-        return tool.getItemName().getString().toLowerCase().contains("spear");
+        return tool.getItem().getDescriptionId().toLowerCase().contains("spear");
     }
 
     /** Axes, swords and spears are the only tools that carry an on hit effect. */
@@ -286,19 +288,59 @@ public class FusionAbilities {
             player.level().addFreshEntity(new ExperienceOrb(player.level(), target.getX(), target.getY(), target.getZ(), xp));
         }
 
-        public static void toolOnBreakBlock(ServerPlayer player, ItemStack tool, BlockPos pos, BlockState state) {
+        public static void toolOnBreakBlock(ServerPlayer player, ItemStack tool, BlockPos pos, BlockState state)
+        {
             //test if the block name contains the word ore or if it drops experience, if so, drop extra experience
             String blockName = state.getBlock().getName().getString().toLowerCase();
-            if(isAxe(tool)) {
+
+            if(!tool.isCorrectToolForDrops(state)) {
+                return;
+            }
+            else if(isAxe(tool)) {
                 if(!blockName.contains(" log")) return;
             }
-            if(isPickaxe(tool)) {
+            else if(isPickaxe(tool)) {
                 if(blockName.contains(" ore")) {}//good
                 else if(state.getBlock() instanceof DropExperienceBlock)
                 {} else { return; }
             }
 
             player.level().addFreshEntity(new ExperienceOrb(player.level(), pos.getX(), pos.getY(), pos.getZ(), xpBonusDrop));
+        }
+
+        public static int HARVEST_XP_MIN = 1;
+        public static int HARVEST_XP_VARIANCE = 3;
+
+        /**
+         * Left clicking a ripe crop with a hoe reaps it without breaking the plant: the drops are
+         * yielded, the crop resets to age zero and the player is paid a little experience.
+         */
+        public static void toolOnUseBlock(ServerPlayer player, ItemStack tool, BlockPos pos) {
+            if (!isHoe(tool)) return;
+
+            ServerLevel level = player.level();
+            BlockState state = level.getBlockState(pos);
+            if (!isCrop(state)) return;
+            if (!isHarvestable(state)) return;
+
+            state.getDrops(getBaseContext(player, pos, state)).forEach(stack ->
+                level.addFreshEntity(new ItemEntity(level,
+                    pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack)));
+
+            resetCrop(level, pos, state);
+
+            int xp = HARVEST_XP_MIN + RANDOM.nextInt(HARVEST_XP_VARIANCE);
+            level.addFreshEntity(new ExperienceOrb(level,
+                pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, xp));
+        }
+
+        /** Replant rather than break, so the farmland stays worked and the seed is not consumed. */
+        private static void resetCrop(ServerLevel level, BlockPos pos, BlockState state) {
+            if (state.getBlock() instanceof CropBlock crop) {
+                level.setBlockAndUpdate(pos, crop.getStateForAge(0));
+                return;
+            }
+            level.destroyBlock(pos, false);
         }
 
     }
@@ -318,7 +360,7 @@ public class FusionAbilities {
         }
 
         public static void toolOnBreakBlock(ServerPlayer player, ItemStack tool, BlockPos pos, BlockState state) {
-            player.hurtServer(player.level(), MAGIC_SOURCE, DEMONIC_DAMAGE / 2);
+            player.hurtServer(player.level(), MAGIC_SOURCE, DEMONIC_DAMAGE);
         }
 
     }
@@ -415,8 +457,6 @@ public class FusionAbilities {
         private static final float CHAIN_DAMAGE = 4.0F;
         private static final int MAX_VEIN_BLOCKS = 8;
 
-        private static  Map<Block, List<Block>> shovelTillableblocks;
-
         private static final List<Block> STONE_RESULTS = List.of(
             Blocks.BASALT, Blocks.TUFF, Blocks.DIORITE, Blocks.ANDESITE, Blocks.GRANITE);
 
@@ -452,32 +492,34 @@ public class FusionAbilities {
             shovelTillableblocks.put(Blocks.SOUL_SOIL, List.of(Blocks.BASALT));
         }
 
-        @Nullable
+        @NotNull
         private static Block tilledResult(Block source) {
             List<Block> results = shovelTillableblocks.get(source);
-            if (results == null || results.isEmpty()) return null;
+            if (results == null || results.isEmpty()) return source;
             int idx = RANDOM.nextInt(results.size());
             return results.get(idx);
         }
 
-        private static final float IGNORE_CHANCE = 0.20F;
+        private static final float IGNORE_CHANCE = 0.50F;
         public static void toolOnUseBlock(ServerPlayer player, ItemStack tool, BlockPos pos)
         {
             if(!isTillable(tool, player.level().getBlockState(pos))) return;
 
-            List<BlockPos> blocks = getRandomBlocksInArea(pos, 1, 1, 1, IGNORE_CHANCE);
-            if(!blocks.contains(pos)) blocks.add(pos);
-            blocks.forEach(blockPos -> {
-                BlockState state = player.level().getBlockState(blockPos);
-                if (isTillable(tool, state)) {
-                    Block newBlock = tilledResult(state.getBlock());
-                    if (newBlock != null) {
-                    //play ligning effect and sound
-                        strike(player.level(), player, blockPos);
-                        player.level().setBlockAndUpdate(blockPos, newBlock.defaultBlockState());
-                    }
-                }
-            });
+            if(isShovel(tool))
+            {
+                List<BlockPos> blocks = getRandomBlocksInArea(pos, 3, 1, 3, IGNORE_CHANCE);
+                if(!blocks.contains(pos)) blocks.add(pos);
+
+                blocks.forEach(blockPos -> {
+                    BlockState state = player.level().getBlockState(blockPos);
+                    Block b = state.getBlock();
+                    if(!shovelTillableblocks.containsKey(b)) return;
+                    player.level().setBlockAndUpdate(blockPos, tilledResult(b).defaultBlockState());
+                });
+
+                strike(player.level(), (ServerPlayer) null, pos);
+            }
+
         }
 
         //When fully charged, lightnight strikes other players in the area
@@ -517,11 +559,6 @@ public class FusionAbilities {
             strike(player.level(), target, target.blockPosition());
         }
 
-            private static boolean isCrop(BlockState state) {
-                return state.getBlock() instanceof CropBlock
-                || state.getBlock() instanceof StemBlock
-                || state.getBlock() instanceof AttachedStemBlock;
-            }
 
         public static void toolOnBreakBlock(ServerPlayer player, ItemStack tool, BlockPos pos, BlockState state)
         {
@@ -568,7 +605,8 @@ public class FusionAbilities {
             bolt.setPos(to.getX() + 0.5, to.getY(), to.getZ() + 0.5);
             bolt.setVisualOnly(true);
             level.addFreshEntity(bolt);
-            from.hurtServer(level, level.damageSources().lightningBolt(), 10f);
+            if(from!=null)
+                from.hurtServer(level, level.damageSources().lightningBolt(), 10f);
         }
 
         private static final int LIGHTNING_TICK_INTERVAL = 6;
@@ -606,28 +644,6 @@ public class FusionAbilities {
             }
         }
 
-
-        /**
-         * Only the tool that would normally harvest the block chains it. Hoes and shovels get their
-         * own treatment later, so they are excluded here.
-         */
-        private static boolean isVeinable(ItemStack tool, BlockState state) {
-            String block = state.getBlock().getName().getString().toLowerCase();
-            Item item = tool.getItem();
-            if (item.components().has(DataComponents.TOOL) && tool.getItemName().getString().toLowerCase().contains("pickaxe")) {
-                return block.contains("ore") && item.isCorrectToolForDrops(tool, state);
-            }
-            if (item instanceof AxeItem || item instanceof FusedAxeItem) return block.contains("log");
-            return false;
-        }
-
-        //right clicking with a shovel
-        private static boolean isTillable(ItemStack tool, BlockState state) {
-            Item item = tool.getItem();
-            if (item instanceof ShovelItem || item instanceof FusedShovelItem)
-                return shovelTillableblocks.containsKey(state.getBlock());
-            return false;
-        }
 
     }
 
@@ -775,7 +791,7 @@ public class FusionAbilities {
         public static void toolOnUseBlock(ServerPlayer player, ItemStack tool, BlockPos pos) {
         }
 
-        public static void toolOnMineBlock(ServerPlayer player, ItemStack tool, BlockPos pos) {
+        public static void toolOnMineBlock(ServerPlayer player, ItemStack tool, BlockPos pos, DigSpeedEvent event) {
         }
 
         public static void toolOnBreakBlock(ServerPlayer player, ItemStack tool, BlockPos pos, BlockState state) {
@@ -828,16 +844,12 @@ public class FusionAbilities {
         private static final int SLOW_DURATION = 60;
         private static final int MAX_SLOW_AMPLIFIER = 2;
 
-        private static final int MAX_VINE_SEARCH = 48;
-        private static final float VINE_SKIP_CHANCE = 0.65F;
+        private static final int MAX_VINE_SEARCH = 12;
+        private static final float VINE_SKIP_CHANCE = 0.2F;
         private static final int MAX_VINES = 6;
 
         private static final int GROW_RADIUS = 2;
         private static final float SEED_CHANCE = 0.20F;
-
-        private static final List<Item> SEEDS = List.of(
-            Items.WHEAT_SEEDS, Items.BEETROOT_SEEDS, Items.MELON_SEEDS,
-            Items.PUMPKIN_SEEDS, Items.TORCHFLOWER_SEEDS);
 
         public static void swordOnHurt(ServerPlayer player, ItemStack tool, Entity target) {
             if (!isWeapon(tool)) return;
@@ -862,14 +874,39 @@ public class FusionAbilities {
             }
         }
 
+        /** Built on server start so the item registry is populated. */
+        private static final Map<Block, List<Item>> DIGGABLE_DROPS = new HashMap<>();
+
+        static void init() {
+            DIGGABLE_DROPS.clear();
+
+            List<Item> sandDrops = List.of(
+                Items.BONE, Items.BONE_MEAL, Items.TORCHFLOWER_SEEDS, Items.SUGAR_CANE);
+            for (Block sand : List.of(Blocks.SAND, Blocks.RED_SAND, Blocks.SUSPICIOUS_SAND)) {
+                DIGGABLE_DROPS.put(sand, sandDrops);
+            }
+
+            List<Item> dirtDrops = List.of(
+                Items.SHORT_GRASS, Items.DANDELION, Items.POPPY, Items.CORNFLOWER,
+                Items.WHEAT_SEEDS, Items.BEETROOT_SEEDS, Items.MELON_SEEDS, Items.PUMPKIN_SEEDS);
+            for (Block dirt : List.of(Blocks.DIRT, Blocks.COARSE_DIRT, Blocks.ROOTED_DIRT,
+                                      Blocks.GRASS_BLOCK, Blocks.PODZOL)) {
+                DIGGABLE_DROPS.put(dirt, dirtDrops);
+            }
+
+            DIGGABLE_DROPS.put(Blocks.MYCELIUM, List.of(Items.RED_MUSHROOM, Items.BROWN_MUSHROOM));
+        }
+
         public static void toolOnBreakBlock(ServerPlayer player, ItemStack tool, BlockPos pos, BlockState state) {
             if (!isShovel(tool)) return;
-            if (!state.is(BlockTags.DIRT)) return;
+
+            List<Item> drops = DIGGABLE_DROPS.get(state.getBlock());
+            if (drops == null || drops.isEmpty()) return;
             if (!tryChance(SEED_CHANCE)) return;
 
-            Item seed = SEEDS.get(RANDOM.nextInt(SEEDS.size()));
+            Item drop = drops.get(RANDOM.nextInt(drops.size()));
             player.level().addFreshEntity(new ItemEntity(player.level(),
-                pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, new ItemStack(seed)));
+                pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, new ItemStack(drop)));
         }
 
         private static void fertilize(ServerLevel level, BlockPos pos) {
@@ -912,7 +949,7 @@ public class FusionAbilities {
             BlockState vine = Blocks.VINE.defaultBlockState();
             boolean attached = false;
 
-            for (Direction dir : Direction.Plane.HORIZONTAL) {
+            for (Direction dir : Direction.Plane.VERTICAL) {
                 if (!anchor.test(level.getBlockState(pos.relative(dir)))) continue;
                 vine = vine.setValue(VineBlock.PROPERTY_BY_DIRECTION.get(dir), true);
                 attached = true;
@@ -928,7 +965,7 @@ public class FusionAbilities {
 
         private static boolean isStoneLike(BlockState state) {
             return state.is(BlockTags.BASE_STONE_OVERWORLD)
-                || state.getBlock().getName().getString().toLowerCase().contains("ore");
+                || state.getBlock().getDescriptionId().toLowerCase().contains("ore");
         }
 
         private static boolean isWoodLike(BlockState state) {
@@ -946,17 +983,17 @@ public class FusionAbilities {
     // Hoes - Haste, Luck, Regeneration
     public static class SpiritedBone {
 
-        private static final float EFFECT_CHANCE = 0.1F;
+        private static final float EFFECT_CHANCE = 0.5F;
         private static final int BOON_DURATION = 200;
 
         private static final List<Holder<MobEffect>> SWORD_BOONS =
             List.of(MobEffects.STRENGTH, MobEffects.SPEED, MobEffects.REGENERATION);
         private static final List<Holder<MobEffect>> AXE_BOONS =
             List.of(MobEffects.HASTE, MobEffects.RESISTANCE, MobEffects.LUCK);
-        private static final List<Holder<MobEffect>> PICKAXE_BOONS =
-            List.of(MobEffects.HASTE, MobEffects.NIGHT_VISION, MobEffects.WATER_BREATHING, MobEffects.REGENERATION);
-        private static final List<Holder<MobEffect>> SHOVEL_BOONS =
-            List.of(MobEffects.HASTE, MobEffects.JUMP_BOOST, MobEffects.SLOW_FALLING);
+        private static final List<Holder<MobEffect>> DIGGING_BOONS =
+            List.of(MobEffects.HASTE, MobEffects.NIGHT_VISION, MobEffects.WATER_BREATHING, MobEffects.REGENERATION,
+                MobEffects.SLOW_FALLING, MobEffects.JUMP_BOOST, MobEffects.NIGHT_VISION, MobEffects.FIRE_RESISTANCE,
+                MobEffects.GLOWING, MobEffects.RESISTANCE );
         private static final List<Holder<MobEffect>> HOE_BOONS =
             List.of(MobEffects.HASTE, MobEffects.LUCK, MobEffects.REGENERATION);
 
@@ -969,10 +1006,15 @@ public class FusionAbilities {
         }
 
         private static void grantEffect(ServerPlayer player, ItemStack tool) {
-            if(player.getActiveEffects().isEmpty())
-                if(!tryChance(3 * EFFECT_CHANCE)) return;
-            else
-                if(!tryChance(EFFECT_CHANCE)) return;
+            if(player.getActiveEffects().isEmpty()) {
+                if(tryChance(3 * EFFECT_CHANCE)) { /* give effect */ }
+                else return;
+            }
+            else {
+                if(tryChance(EFFECT_CHANCE)) { /* give effect */ }
+                else return;
+            }
+
 
             List<Holder<MobEffect>> pool = poolFor(tool);
             if (pool.isEmpty()) return;
@@ -988,8 +1030,8 @@ public class FusionAbilities {
         private static List<Holder<MobEffect>> poolFor(ItemStack tool) {
             if (isSword(tool)) return SWORD_BOONS;
             if (isAxe(tool)) return AXE_BOONS;
-            if (isPickaxe(tool)) return PICKAXE_BOONS;
-            if (isShovel(tool)) return SHOVEL_BOONS;
+            if (isPickaxe(tool)) return DIGGING_BOONS;
+            if (isShovel(tool)) return DIGGING_BOONS;
             if (isHoe(tool)) return HOE_BOONS;
             return List.of();
         }
@@ -1014,13 +1056,38 @@ public class FusionAbilities {
             player.addEffect(poison);
         }
 
-        //If the destroy progress is above 80%, break the block instantly
-        public static void toolOnMineBlock(ServerPlayer player, ItemStack tool, BlockPos pos) {
-            //mine blocks faster
-            BlockState state = player.level().getBlockState(pos);
-            if(state.getDestroyProgress(player, player.level(), pos) > 0.8F) {
-                player.level().destroyBlock(pos, true, player);
+        public static float DIG_SPEED_MULTIPLIER = 4.0F;
+        private static final float DISSOLVE_PARTICLES_CHANCE = 0.25f;
+
+        private static final Map<Level, Set<BlockPos>> DISSOLVING = new HashMap<>();
+
+    //sometimes breaks blocks for you
+        public static void toolOnMineBlock(ServerPlayer player, ItemStack tool, BlockPos pos, DigSpeedEvent event) {
+            Level level = player.level();
+            BlockState state = level.getBlockState(pos);
+            if(state.isAir() ||  !tool.isCorrectToolForDrops(level.getBlockState(pos))) return;
+            //event.setSpeedOverride(event.getSpeed() * DIG_SPEED_MULTIPLIER);
+            DISSOLVING.computeIfAbsent(player.level(), k -> new HashSet<>()).add(pos.immutable());
+        }
+
+        private static int TOXIC_AUTODESTROY_TICKS = 32;
+        private static int count = 0;
+        public static void onTick(ServerLevel level)
+        {
+            if(count++<TOXIC_AUTODESTROY_TICKS) return;
+            count = 0;
+
+            Set<BlockPos> queued = DISSOLVING.get(level);
+            if (queued == null || queued.isEmpty()) return;
+
+            for (BlockPos pos : queued) {
+                if (level.getBlockState(pos).isAir()) continue;
+                if(tryChance(DISSOLVE_PARTICLES_CHANCE)) {
+                    ToxicEffect.emit(level, pos);
+                    level.destroyBlock(pos, true);
+                }
             }
+            queued.clear();
         }
 
         //for a hoe, it needs to clear all grass, vines, tall grass and flowers in a 5x5 area
@@ -1050,6 +1117,31 @@ public class FusionAbilities {
     }
 
 
+    /**
+     * Only the tool that would normally harvest the block chains it. Hoes and shovels get their
+     * own treatment later, so they are excluded here.
+     */
+    private static boolean isVeinable(ItemStack tool, BlockState state) {
+        String block = state.getBlock().getName().getString().toLowerCase();
+        Item item = tool.getItem();
+        if(!item.isCorrectToolForDrops(tool, state)) return false;
+        if (item.components().has(DataComponents.TOOL) && tool.getItem().getDescriptionId().toLowerCase().contains("pickaxe")) {
+            Block b = state.getBlock();
+            return block.contains("ore");
+        }
+        if (item instanceof AxeItem || item instanceof FusedAxeItem) return block.contains("log");
+        return false;
+    }
+
+    //right clicking with a shovel
+    private static boolean isTillable(ItemStack tool, BlockState state) {
+        Item item = tool.getItem();
+        if (item instanceof ShovelItem || item instanceof FusedShovelItem)
+            return shovelTillableblocks.containsKey(state.getBlock());
+        return false;
+    }
+
+
     private static boolean isPlantLife(BlockState state)
     {
         if (state.isAir()) return false;
@@ -1072,6 +1164,16 @@ public class FusionAbilities {
             || state.is(BlockTags.FLOWERS)
             || state.is(BlockTags.SAPLINGS)
             || state.is(BlockTags.CROPS);
+    }
+
+    private static boolean isCrop(BlockState state) {
+        return state.getBlock() instanceof CropBlock
+            || state.getBlock() instanceof StemBlock
+            || state.getBlock() instanceof AttachedStemBlock;
+    }
+
+    private static boolean isHarvestable(BlockState state) {
+        return state.getBlock() instanceof CropBlock crop && crop.isMaxAge(state);
     }
 
 }

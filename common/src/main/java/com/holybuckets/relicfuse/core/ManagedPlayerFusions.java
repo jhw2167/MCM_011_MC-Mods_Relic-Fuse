@@ -340,7 +340,7 @@ public class ManagedPlayerFusions implements IManagedPlayer {
         ServerPlayer sp = server(event.getPlayer());
         BlockPos pos = MINING_POS_CACHE.getOrDefault(sp, BlockPos.ZERO);
         if(pos.equals(BlockPos.ZERO)) return;
-        h.toolOnMineBlock.run(sp, tool(sp), pos);
+        h.toolOnMineBlock.run(sp, tool(sp), pos, event);
     }
 
     private static void onUseBlock(UseBlockEvent event) {
@@ -357,8 +357,12 @@ public class ManagedPlayerFusions implements IManagedPlayer {
         Hooks h = hooks(event.getPlayer());
         if (h == null) return;
         ServerPlayer sp = server(event.getPlayer());
-        MINING_POS_CACHE.put(sp, (event.getPos()==null ? BlockPos.ZERO : event.getPos()));
+        BlockPos pos = event.getPos() == null ? BlockPos.ZERO : event.getPos();
+        MINING_POS_CACHE.put(sp, pos);
         h.onSwing.run(sp, tool(sp));
+        // Swinging at air carries no position, so the block variant only fires on a real target.
+        if (pos.equals(BlockPos.ZERO)) return;
+        h.toolOnLeftClickBlock.run(sp, tool(sp), pos);
     }
 
     private static void onRightClick(PlayerInteractEvent.RightClickInteraction event) {
@@ -393,6 +397,7 @@ public class ManagedPlayerFusions implements IManagedPlayer {
             if(level instanceof ServerLevel sl) {
                 FusionAbilities.ToxicCrystal.onTick(sl);
                 FusionAbilities.ElectricCrystal.onTick(sl);
+                FusionAbilities.ToxicBone.onTick(sl);
             }
         });
     }
@@ -435,6 +440,8 @@ public class ManagedPlayerFusions implements IManagedPlayer {
     @FunctionalInterface public interface PlainHook { void run(ServerPlayer p, ItemStack tool); }
     @FunctionalInterface public interface PosHook { void run(ServerPlayer p, ItemStack tool, BlockPos pos); }
     @FunctionalInterface public interface StateHook { void run(ServerPlayer p, ItemStack tool, BlockPos pos); }
+    /** Carries the event so the ability can override dig speed instead of recomputing it. */
+    @FunctionalInterface public interface MineHook { void run(ServerPlayer p, ItemStack tool, BlockPos pos, DigSpeedEvent event); }
     @FunctionalInterface public interface BreakHook { void run(ServerPlayer p, ItemStack tool, BlockPos pos, BlockState state); }
     @FunctionalInterface public interface DamageHook { void run(ServerPlayer p, ItemStack tool, DamageSource src, float amount); }
     @FunctionalInterface public interface AmountHook { void run(ServerPlayer p, ItemStack tool, float amount); }
@@ -453,7 +460,8 @@ public class ManagedPlayerFusions implements IManagedPlayer {
         PlainHook toolOnRightClick = (p, t) -> {};
         EntityHook toolOnEntityInteract = (p, t, e) -> {};
         PosHook toolOnUseBlock = (p, t, pos) -> {};
-        StateHook toolOnMineBlock = (p, t, st) -> {};
+        PosHook toolOnLeftClickBlock = (p, t, pos) -> {};
+        MineHook toolOnMineBlock = (p, t, pos, e) -> {};
         BreakHook toolOnBreakBlock = (p, t, pos, st) -> {};
         DamageHook onPlayerHurt = (p, t, src, amt) -> {};
         AmountHook onPlayerFall = (p, t, amt) -> {};
@@ -470,7 +478,8 @@ public class ManagedPlayerFusions implements IManagedPlayer {
         public Hooks toolOnRightClick(PlainHook h) { if (h != null) toolOnRightClick = h; return this; }
         public Hooks toolOnEntityInteract(EntityHook h) { if (h != null) toolOnEntityInteract = h; return this; }
         public Hooks toolOnUseBlock(PosHook h) { if (h != null) toolOnUseBlock = h; return this; }
-        public Hooks toolOnMineBlock(StateHook h) { if (h != null) toolOnMineBlock = h; return this; }
+        public Hooks toolOnLeftClickBlock(PosHook h) { if (h != null) toolOnLeftClickBlock = h; return this; }
+        public Hooks toolOnMineBlock(MineHook h) { if (h != null) toolOnMineBlock = h; return this; }
         public Hooks toolOnBreakBlock(BreakHook h) { if (h != null) toolOnBreakBlock = h; return this; }
         public Hooks onPlayerHurt(DamageHook h) { if (h != null) onPlayerHurt = h; return this; }
         public Hooks onPlayerFall(AmountHook h) { if (h != null) onPlayerFall = h; return this; }
@@ -487,7 +496,8 @@ public class ManagedPlayerFusions implements IManagedPlayer {
 
         route(ModItems.blessedCrystal, Hooks.of()
             .swordOnDeath(FusionAbilities.BlessedCrystal::swordOnDeath)
-            .toolOnBreakBlock(FusionAbilities.BlessedCrystal::toolOnBreakBlock));
+            .toolOnBreakBlock(FusionAbilities.BlessedCrystal::toolOnBreakBlock)
+            .toolOnUseBlock(FusionAbilities.BlessedCrystal::toolOnUseBlock));
 
         route(ModItems.demonicCrystal, Hooks.of()
             .swordOnDeath(FusionAbilities.DemonicCrystal::swordOnDeath)

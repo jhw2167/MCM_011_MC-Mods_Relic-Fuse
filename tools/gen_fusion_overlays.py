@@ -176,7 +176,25 @@ def build_crystal(base, reference, bands):
 OUTLINE_VALUE = 0.25
 
 
-def build_bone_from_reference(base, reference, bands):
+# Regions of the sprite the bone overlay must leave alone so the tool's own material still reads.
+# Inclusive (x0, y0, x1, y1) in 16x16 sprite space; the reference art covers these areas but the
+# base material is what should show there.
+REVEAL_REGIONS = {
+    # Mid blade, immediately above the crossguard at y8.
+    "sword": [(7, 3, 12, 7)],
+    # The whole shovel head, which sits top right of the handle.
+    "shovel": [(8, 2, 14, 7)],
+}
+
+
+def is_revealed(tool, x, y):
+    for x0, y0, x1, y1 in REVEAL_REGIONS.get(tool, ()):
+        if x0 <= x <= x1 and y0 <= y <= y1:
+            return True
+    return False
+
+
+def build_bone_from_reference(base, reference, bands, tool=None):
     """Diff hand-authored bone art against the base tool.
 
     Unlike the gild, bone material is desaturated (sat 0.05-0.19), so it cannot be picked out by
@@ -190,6 +208,9 @@ def build_bone_from_reference(base, reference, bands):
         for x in range(size[0]):
             px = reference.getpixel((x, y))
             if px[3] == 0:
+                continue
+            # Leave the material showing: emit nothing here so the base model is what renders.
+            if is_revealed(tool, x, y):
                 continue
             under = base.getpixel((x, y))
             if under[3] != 0 and under[:3] == px[:3]:
@@ -430,7 +451,7 @@ def generate(args):
     elif args.kind == KIND_BONE:
         # Prefer hand-authored reference art; fall back to grafting a bone sprite onto the handle.
         if args.reference:
-            struct, layers, anchors = build_bone_from_reference(base, load(args.reference), bands)
+            struct, layers, anchors = build_bone_from_reference(base, load(args.reference), bands, args.tool)
         elif args.shape:
             struct, layers, anchors = build_bone(base, load(args.shape), bands)
         else:

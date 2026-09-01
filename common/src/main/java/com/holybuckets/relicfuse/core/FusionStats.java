@@ -135,7 +135,7 @@ public class FusionStats {
     public static class OvergrownBone {
         static Consumer<ItemStack> register = (sword) -> {
             updateDurability(sword, BONE_DURABILITY_MODIFIER);
-            HBUtil.ItemUtil.addEnchant(sword, Enchantments.FORTUNE, 1);
+            //HBUtil.ItemUtil.addEnchant(sword, Enchantments.FORTUNE, 1);
         };
     }
 
@@ -143,7 +143,7 @@ public class FusionStats {
     public static class SpiritedBone {
         static Consumer<ItemStack> register = (sword) -> {
             updateDurability(sword, BONE_DURABILITY_MODIFIER);
-            HBUtil.ItemUtil.addEnchant(sword, Enchantments.EFFICIENCY, 1);
+            //HBUtil.ItemUtil.addEnchant(sword, Enchantments.EFFICIENCY, 1);
         };
     }
 
@@ -151,7 +151,7 @@ public class FusionStats {
     public static class ToxicBone {
         static Consumer<ItemStack> register = (sword) -> {
             updateDurability(sword, BONE_DURABILITY_MODIFIER);
-            HBUtil.ItemUtil.removeEnchant(sword, Enchantments.MENDING);
+            //HBUtil.ItemUtil.removeEnchant(sword, Enchantments.MENDING);
         };
     }
 

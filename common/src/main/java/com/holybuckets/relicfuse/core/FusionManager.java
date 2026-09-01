@@ -221,6 +221,11 @@ public class FusionManager {
      * @param tool
      * @return tool
      */
+    /** Skips the ritual and its animation; used by the debug commands. */
+    public static ItemStack fuseDirect(ItemStack tool, ItemStack modifier) {
+        return fuse(modifier, tool);
+    }
+
     private static ItemStack fuse(ItemStack modifier, ItemStack tool)
     {
         if (modifier.isEmpty() || tool.isEmpty()) return ItemStack.EMPTY;

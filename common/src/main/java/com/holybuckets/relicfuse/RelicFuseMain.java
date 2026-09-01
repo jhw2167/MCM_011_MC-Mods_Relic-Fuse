@@ -3,6 +3,7 @@ package com.holybuckets.relicfuse;
 
 import com.holybuckets.foundation.event.EventRegistrar;
 import com.holybuckets.foundation.event.balm.server.ServerStartingEvent;
+import com.holybuckets.relicfuse.command.CommandList;
 import com.holybuckets.relicfuse.config.TemplateConfig;
 import com.holybuckets.relicfuse.effect.FusionColors;
 import com.holybuckets.relicfuse.effect.FusionGlow;
@@ -31,6 +32,7 @@ public class RelicFuseMain {
         EventRegistrar registrar = EventRegistrar.getInstance();
         registrar.registerOnBeforeServerStarted(this::onServerStarting);
         FusionManager.init(registrar);
+        CommandList.init(registrar);
         ManagedPlayerFusions.init(registrar);
         FusionColors.init(registrar);
         FusionGlow.init(registrar);

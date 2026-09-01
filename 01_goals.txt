@@ -221,3 +221,9 @@ needs to pass serverPlayer if integrated server
 - refactored parse inventory and added new matches inventory event
 
 - added new itemUtil events
+
+
+  public static List<BlockPos> cuboid(BlockPos source, int x, int y, int z) {
+            Fast3DArray cube = ShapeUtil.getCube(x,y,z);
+
+the last arg is actually being used as the height
