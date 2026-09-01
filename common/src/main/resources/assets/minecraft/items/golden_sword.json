@@ -807,57 +807,7 @@
             },
             {
               "type": "minecraft:model",
-              "model": "hbs_relicfuse:item/overlay/sword_struct_bone"
-            },
-            {
-              "type": "minecraft:model",
-              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_0",
-              "tints": [
-                {
-                  "type": "minecraft:constant",
-                  "value": 2045752
-                }
-              ]
-            },
-            {
-              "type": "minecraft:model",
-              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_1",
-              "tints": [
-                {
-                  "type": "minecraft:constant",
-                  "value": 7873845
-                }
-              ]
-            },
-            {
-              "type": "minecraft:model",
-              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_2",
-              "tints": [
-                {
-                  "type": "minecraft:constant",
-                  "value": 9842746
-                }
-              ]
-            },
-            {
-              "type": "minecraft:model",
-              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_3",
-              "tints": [
-                {
-                  "type": "minecraft:constant",
-                  "value": 11747904
-                }
-              ]
-            },
-            {
-              "type": "minecraft:model",
-              "model": "hbs_relicfuse:item/overlay/sword_tint_bone_4",
-              "tints": [
-                {
-                  "type": "minecraft:constant",
-                  "value": 5217905
-                }
-              ]
+              "model": "hbs_relicfuse:item/overlay/overgrown_bone_sword"
             }
           ]
         }

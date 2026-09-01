@@ -855,6 +855,9 @@ public class FusionAbilities {
             if (!isWeapon(tool)) return;
             if (!(target instanceof LivingEntity living)) return;
 
+            //check if the player has any seeds in his inventory and expend them, or return early
+
+
             MobEffectInstance existing = living.getEffect(MobEffects.SLOWNESS);
             int amplifier = existing == null ? 0 : Math.min(existing.getAmplifier() + 1, MAX_SLOW_AMPLIFIER);
             living.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, SLOW_DURATION, amplifier), player);
